@@ -37,7 +37,7 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
   void initState() {
     super.initState();
     _name = widget.fabric?.name ?? '';
-    _type = widget.fabric?.type ?? '';
+    _material = widget.fabric?.material ?? '';
     _quantity = widget.fabric?.quantity.toString() ?? '';
   }
 
@@ -78,7 +78,7 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
                   TextFormField(
                     initialValue: _type,
                     decoration: const InputDecoration(
-                      labelText: 'Type du tissu',
+                      labelText: 'MAtériau du tissu',
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
