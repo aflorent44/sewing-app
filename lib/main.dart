@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mon_app_couture/screens/init_screen.dart';
+import 'package:mon_app_couture/app/screens/init_screen.dart';
 import 'routes.dart';
 
 void main() {

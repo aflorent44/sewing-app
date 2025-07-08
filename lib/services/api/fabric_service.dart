@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../models/fabric.dart';
+import '../../models/fabric.dart';
 
 Future<List<Fabric>> fetchFabrics() async {
   final url = Uri.parse(

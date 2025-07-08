@@ -2,8 +2,11 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:mon_app_couture/models/colour.dart';
 import 'package:mon_app_couture/models/fabric.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mon_app_couture/models/fabric_type.dart';
+import 'package:mon_app_couture/models/season.dart';
 
 class FabricFormDialog extends StatefulWidget {
   final Fabric? fabric;
@@ -17,8 +20,19 @@ class FabricFormDialog extends StatefulWidget {
 class _FabricFormDialogState extends State<FabricFormDialog> {
   final _formKey = GlobalKey<FormState>();
   late String _name;
-  late String _type;
+  late FabricType _type;
   late String _quantity;
+  late List<Material> _materials;
+  late String _weave;
+  late String _brand;
+  late String _description;
+  late List<Season> _seasons;
+  late List<Colour> _colours;
+  late String _width;
+  late String _extensiveness;
+  late String _price;
+  late String _link;
+  late String _notes;
 
   File? _image;
   final ImagePicker _picker = ImagePicker();
@@ -37,7 +51,6 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
   void initState() {
     super.initState();
     _name = widget.fabric?.name ?? '';
-    _material = widget.fabric?.material ?? '';
     _quantity = widget.fabric?.quantity.toString() ?? '';
   }
 
@@ -74,19 +87,6 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
                       return null;
                     },
                     onSaved: (value) => _name = value!,
-                  ),
-                  TextFormField(
-                    initialValue: _type,
-                    decoration: const InputDecoration(
-                      labelText: 'MAtériau du tissu',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Veuillez saisir le type du tissu';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) => _type = value!,
                   ),
                   TextFormField(
                     initialValue: _quantity,
@@ -134,13 +134,12 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
                             _formKey.currentState!.save();
 
                             if (!isEditing) {
-                              await saveFabric(_name, _type, _quantity);
+                              await saveFabric(_name, _quantity);
                             } else {
                               await updateFabric(
                                 widget.fabric!.id,
                                 _name,
-                                _type,
-                                _quantity,
+                                _quantity
                               );
                             }
 
@@ -205,7 +204,7 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
   }
 }
 
-Future<void> saveFabric(String name, String type, String quantity) async {
+Future<void> saveFabric(String name, String quantity) async {
   final url = Uri.parse('http://192.168.1.21:3000/fabric');
 
   final response = await http.post(
@@ -213,7 +212,6 @@ Future<void> saveFabric(String name, String type, String quantity) async {
     headers: {'Content-Type': 'application/json'},
     body: jsonEncode({
       'name': name,
-      'type': type,
       'quantity': double.tryParse(quantity) ?? 0,
     }),
   );
@@ -228,7 +226,6 @@ Future<void> saveFabric(String name, String type, String quantity) async {
 Future<void> updateFabric(
   String id,
   String name,
-  String type,
   String quantity,
 ) async {
   final url = Uri.parse('http://192.168.1.21:3000/fabric/$id');
@@ -238,7 +235,6 @@ Future<void> updateFabric(
     headers: {'Content-Type': 'application/json'},
     body: jsonEncode({
       'name': name,
-      'type': type,
       'quantity': double.tryParse(quantity) ?? 0,
     }),
   );

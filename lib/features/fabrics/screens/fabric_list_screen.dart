@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mon_app_couture/models/fabric.dart';
-import 'package:mon_app_couture/dialogs/fabric_form_dialog.dart';
-import 'package:mon_app_couture/services/fabric_service.dart';
+import 'package:mon_app_couture/features/fabrics/dialogs/fabric_form_dialog.dart';
+import 'package:mon_app_couture/services/api/fabric_service.dart';
 
 class FabricsScreen extends StatefulWidget {
   const FabricsScreen({super.key});
@@ -41,7 +41,6 @@ class _FabricsScreenState extends State<FabricsScreen> {
                       final fabric = fabrics[index];
                       return ListTile(
                         title: Text(fabric.name),
-                        subtitle: Text(fabric.type),
                         trailing: Text('${fabric.quantity} m'),
                         onTap: () => _showFabricDetails(context, fabric),
                       );

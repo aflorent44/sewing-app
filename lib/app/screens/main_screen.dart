@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mon_app_couture/screens/fabric/fabric_list_screen.dart';
-import 'package:mon_app_couture/screens/patterns_screen.dart';
-import 'package:mon_app_couture/screens/profile_screen.dart';
-import 'package:mon_app_couture/screens/projects_screen.dart';
+import 'package:mon_app_couture/features/fabrics/screens/fabric_list_screen.dart';
+import 'package:mon_app_couture/features/patterns/screens/patterns_screen.dart';
+import 'package:mon_app_couture/features/profile/profile_screen.dart';
+import 'package:mon_app_couture/features/projects/screens/projects_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
