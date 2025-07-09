@@ -2,7 +2,7 @@ import 'package:mon_app_couture/models/brand.dart';
 import 'package:mon_app_couture/models/colour.dart';
 import 'package:mon_app_couture/models/fabric_type.dart';
 import 'package:mon_app_couture/models/material.dart';
-import 'package:mon_app_couture/models/season.dart';
+import 'package:mon_app_couture/models/enums/season.dart';
 
 class Fabric {
   final String id;
@@ -46,8 +46,12 @@ class Fabric {
   });
 
   factory Fabric.fromJson(Map<String, dynamic> json) {
+    if (json['_id'] == null || json['name'] == null) {
+      throw Exception('Champ requis manquant dans Fabric');
+    }
+
     return Fabric(
-      id: json['id'],
+      id: json['_id'],
       name: json['name'],
       description: json['description'],
       type: json['type'] != null ? FabricType.fromJson(json['type']) : null,
@@ -55,21 +59,21 @@ class Fabric {
       weave: json['weave'],
       materials: json['materials'] != null ? List<Material>.from(json['materials'].map((m) => Material.fromJson(m))) : null,
       seasons: json['seasons'] != null ? List<Season>.from(json['seasons'].map((s) => Season.fromJson(s))) : null,
-      quantity: json['quantity'],
+      quantity: (json['quantity'] as num?)?.toDouble(),
       colours: json['colours'] != null ? List<Colour>.from(json['colours'].map((c) => Colour.fromJson(c))) : null,
-      width: json['width'],
-      extensiveness: json['extensiveness'],
-      price: json['price'],
+      width: json['width'] as int? ?? 0,
+      extensiveness: (json['extensiveness'] as num?)?.toDouble(),
+      price: (json['price'] as num?)?.toDouble(),
       images: json['images'],
       link: json['link'],
       notes: json['notes'],
-      isFavorite: json['isFavorite'],
+      isFavorite: json['isFavorite'] ?? false,
       userId: json['userId'],
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
+        '_id': id,
         'name': name,
         'description': description,
         'type': type?.toJson(),

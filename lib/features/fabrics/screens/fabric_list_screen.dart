@@ -41,7 +41,6 @@ class _FabricsScreenState extends State<FabricsScreen> {
                       final fabric = fabrics[index];
                       return ListTile(
                         title: Text(fabric.name),
-                        trailing: Text('${fabric.quantity} m'),
                         onTap: () => _showFabricDetails(context, fabric),
                       );
                     },
@@ -80,8 +79,8 @@ class _FabricsScreenState extends State<FabricsScreen> {
       ),
     );
   }
-  
-void _showFabricDetails(BuildContext context, Fabric fabric) async {
+
+  void _showFabricDetails(BuildContext context, Fabric fabric) async {
     final result = await showDialog(
       context: context,
       builder: (context) => FabricFormDialog(fabric: fabric),
@@ -93,5 +92,4 @@ void _showFabricDetails(BuildContext context, Fabric fabric) async {
       });
     }
   }
-
 }
