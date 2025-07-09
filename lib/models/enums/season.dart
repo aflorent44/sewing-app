@@ -9,21 +9,22 @@ enum Season {
   }
 
   String toJson() => name;
-
-  
 }
 
 extension SeasonExtension on Season {
   String get label {
     switch (this) {
       case Season.spring:
-        return 'Printemps';
+        //retourne un emoji printemps
+        return '🌸';
       case Season.summer:
-        return 'Été';
+        //emoji été
+        return '🌞';
       case Season.autumn:
-        return 'Automne';
+        //emoji automne
+        return '🍂';
       case Season.winter:
-        return 'Hiver';
+        return '❄️';
     }
   }
 }

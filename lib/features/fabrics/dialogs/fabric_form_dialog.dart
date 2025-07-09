@@ -1,13 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:mon_app_couture/models/brand.dart';
-import 'package:mon_app_couture/models/colour.dart';
+import 'package:mon_app_couture/models/enums/colour.dart';
 import 'package:mon_app_couture/models/fabric.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mon_app_couture/models/fabric_type.dart';
 import 'package:mon_app_couture/models/enums/season.dart';
 import 'package:mon_app_couture/services/api/fabric_service.dart';
-import 'package:mon_app_couture/shared/widgets/season_checkbox_field.dart';
+import 'package:mon_app_couture/shared/widgets/custom_chip_field.dart';
 import 'package:mon_app_couture/shared/widgets/custom_numeric_field.dart';
 import 'package:mon_app_couture/shared/widgets/custom_text_field.dart';
 
@@ -30,7 +30,7 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
   late Brand _brand;
   late String _description;
   late List<Season> _selectedSeasons;
-  late List<Colour> _colours;
+  late List<Colour> _selectedColours;
   late String _width;
   late String _extensiveness;
   late String _price;
@@ -60,6 +60,7 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
     _price = widget.fabric?.price.toString() ?? '';
     _quantity = widget.fabric?.quantity.toString() ?? '';
     _selectedSeasons = widget.fabric?.seasons ?? [];
+    _selectedColours = widget.fabric?.colours ?? [];
     _notes = widget.fabric?.notes ?? '';
   }
 
@@ -125,13 +126,29 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
                         ),
                       ],
                     ),
-                    SeasonCheckboxField(
-                      selectedSeasons: _selectedSeasons,
+                    CustomChipField<Season>(
+                      label: 'Saisons',
+                      values: Season.values,
+                      selected: _selectedSeasons,
                       onChanged: (seasons) {
                         setState(() {
                           _selectedSeasons = seasons;
                         });
                       },
+                      labelBuilder: (s) =>
+                          s.label, // si tu as un champ `label` dans Season
+                    ),
+                    CustomChipField<Colour>(
+                      label: 'Couleurs',
+                      values: Colour.values,
+                      selected: _selectedColours,
+                      onChanged: (colours) {
+                        setState(() {
+                          _selectedColours = colours;
+                        });
+                      },
+                      labelBuilder: (s) =>
+                          s.label, // si tu as un champ `label` dans Season
                     ),
                     CustomTextField(
                       label: 'Notes',
@@ -167,7 +184,15 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
                               _formKey.currentState!.save();
 
                               if (!isEditing) {
-                                await saveFabric(_name, _description, _quantity, _width, _selectedSeasons, _notes);
+                                await saveFabric(
+                                  _name,
+                                  _description,
+                                  _quantity,
+                                  _width,
+                                  _selectedSeasons,
+                                  _selectedColours,
+                                  _notes,
+                                );
                               } else {
                                 await updateFabric(
                                   widget.fabric!.id,
@@ -176,7 +201,8 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
                                   _quantity,
                                   _width,
                                   _selectedSeasons,
-                                  _notes
+                                  _selectedColours,
+                                  _notes,
                                 );
                               }
 

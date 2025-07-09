@@ -1,5 +1,5 @@
 import 'package:mon_app_couture/models/brand.dart';
-import 'package:mon_app_couture/models/colour.dart';
+import 'package:mon_app_couture/models/enums/colour.dart';
 import 'package:mon_app_couture/models/fabric_type.dart';
 import 'package:mon_app_couture/models/material.dart';
 import 'package:mon_app_couture/models/enums/season.dart';
