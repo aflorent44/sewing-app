@@ -6,7 +6,10 @@ import 'package:mon_app_couture/models/fabric.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mon_app_couture/models/fabric_type.dart';
 import 'package:mon_app_couture/models/enums/season.dart';
+import 'package:mon_app_couture/models/material_model.dart';
 import 'package:mon_app_couture/services/api/fabric_service.dart';
+import 'package:mon_app_couture/services/api/material_service.dart';
+import 'package:mon_app_couture/shared/widgets/custom_autocomplete_field.dart';
 import 'package:mon_app_couture/shared/widgets/custom_chip_field.dart';
 import 'package:mon_app_couture/shared/widgets/custom_numeric_field.dart';
 import 'package:mon_app_couture/shared/widgets/custom_text_field.dart';
@@ -25,7 +28,9 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
   late String _name;
   late FabricType _type;
   late String _quantity;
-  late List<Material> _materials;
+  late List<MaterialModel> _availableMaterials = [];
+  late List<MaterialModel> _selectedMaterials = [];
+  late List<String> _toCreateMaterials = [];
   late String _weave;
   late Brand _brand;
   late String _description;
@@ -36,6 +41,21 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
   late String _price;
   late String _link;
   late String _notes;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMaterials();
+    _name = widget.fabric?.name ?? '';
+    _description = widget.fabric?.description ?? '';
+    _width = widget.fabric?.width.toString() ?? '';
+    _extensiveness = widget.fabric?.extensiveness.toString() ?? '';
+    _price = widget.fabric?.price.toString() ?? '';
+    _quantity = widget.fabric?.quantity.toString() ?? '';
+    _selectedSeasons = widget.fabric?.seasons ?? [];
+    _selectedColours = widget.fabric?.colours ?? [];
+    _notes = widget.fabric?.notes ?? '';
+  }
 
   File? _image;
   final ImagePicker _picker = ImagePicker();
@@ -50,18 +70,18 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _name = widget.fabric?.name ?? '';
-    _description = widget.fabric?.description ?? '';
-    _width = widget.fabric?.width.toString() ?? '';
-    _extensiveness = widget.fabric?.extensiveness.toString() ?? '';
-    _price = widget.fabric?.price.toString() ?? '';
-    _quantity = widget.fabric?.quantity.toString() ?? '';
-    _selectedSeasons = widget.fabric?.seasons ?? [];
-    _selectedColours = widget.fabric?.colours ?? [];
-    _notes = widget.fabric?.notes ?? '';
+  Future<void> _loadMaterials() async {
+    try {
+      final materials = await fetchMaterials();
+      setState(() {
+        _availableMaterials = materials;
+        if (widget.fabric?.materials != null) {
+          _selectedMaterials = widget.fabric!.materials!;
+        }
+      });
+    } catch (e) {
+      print("Erreur chargement matières : $e");
+    }
   }
 
   @override
@@ -150,6 +170,22 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
                       labelBuilder: (s) =>
                           s.label, // si tu as un champ `label` dans Season
                     ),
+                    CustomAutocompleteField<MaterialModel>(
+                      label: 'Matières',
+                      options: _availableMaterials,
+                      selected: _selectedMaterials,
+                      itemLabelBuilder: (material) => material.name,
+                      onChanged: (updatedList) {
+                        setState(() {
+                          _selectedMaterials = updatedList;
+                        });
+                      },
+                      onToCreateChanged: (newToCreate) {
+                        setState(() {
+                          _toCreateMaterials = newToCreate;
+                        });
+                      },
+                    ),
                     CustomTextField(
                       label: 'Notes',
                       initialValue: _notes,
@@ -182,7 +218,6 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
                           onPressed: () async {
                             if (_formKey.currentState!.validate()) {
                               _formKey.currentState!.save();
-
                               if (!isEditing) {
                                 await saveFabric(
                                   _name,
@@ -191,6 +226,8 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
                                   _width,
                                   _selectedSeasons,
                                   _selectedColours,
+                                  _selectedMaterials,
+                                  _toCreateMaterials,
                                   _notes,
                                 );
                               } else {
@@ -202,6 +239,8 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
                                   _width,
                                   _selectedSeasons,
                                   _selectedColours,
+                                  _selectedMaterials,
+                                  _toCreateMaterials,
                                   _notes,
                                 );
                               }

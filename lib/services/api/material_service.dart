@@ -1,0 +1,43 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:mon_app_couture/models/material_model.dart';
+
+Future<List<MaterialModel>> fetchMaterials() async {
+  final url = Uri.parse('http://192.168.1.21:3000/material');
+
+  final response = await http.get(url);
+
+  if (response.statusCode == 200) {
+    final List<dynamic> data = jsonDecode(response.body);
+    return data.map((json) => MaterialModel.fromJson(json)).toList();
+  } else {
+    throw Exception('Erreur lors du chargement des matériaux');
+  }
+}
+
+Future<MaterialModel> saveMaterial(String name) async {
+  print('saveMaterial appelé avec : $name');
+  try {
+    final url = Uri.parse('http://192.168.1.21:3000/material');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'name': name}),
+    );
+    print('Status code: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      return MaterialModel.fromJson(data);
+    } else {
+      throw Exception(
+        'Erreur lors de la création du matériau : ${response.body}',
+      );
+    }
+  } catch (e, stack) {
+    print('Exception dans saveMaterial : $e');
+    print(stack);
+    rethrow;
+  }
+}

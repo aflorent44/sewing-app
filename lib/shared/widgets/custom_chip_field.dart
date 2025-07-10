@@ -28,8 +28,8 @@ class CustomChipField<T extends Enum> extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Wrap(
-          spacing: 8,
-          runSpacing: 8,
+          spacing: 2,
+          runSpacing: 3,
           children: values.map((value) {
             final isSelected = selected.contains(value);
             return FilterChip(

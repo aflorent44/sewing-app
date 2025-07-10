@@ -1,7 +1,7 @@
 import 'package:mon_app_couture/models/brand.dart';
 import 'package:mon_app_couture/models/enums/colour.dart';
 import 'package:mon_app_couture/models/fabric_type.dart';
-import 'package:mon_app_couture/models/material.dart';
+import 'package:mon_app_couture/models/material_model.dart';
 import 'package:mon_app_couture/models/enums/season.dart';
 
 class Fabric {
@@ -11,7 +11,7 @@ class Fabric {
   final FabricType? type;
   final Brand? brand;
   final String? weave;
-  final List<Material>? materials;
+  final List<MaterialModel>? materials;
   final List<Season>? seasons;
   final double? quantity;
   final List<Colour>? colours;
@@ -57,7 +57,7 @@ class Fabric {
       type: json['type'] != null ? FabricType.fromJson(json['type']) : null,
       brand: json['brand'] != null ? Brand.fromJson(json['brand']) : null,
       weave: json['weave'],
-      materials: json['materials'] != null ? List<Material>.from(json['materials'].map((m) => Material.fromJson(m))) : null,
+      materials: json['materials'] != null ? List<MaterialModel>.from(json['materials'].map((m) => MaterialModel.fromJson(m))) : null,
       seasons: json['seasons'] != null ? List<Season>.from(json['seasons'].map((s) => Season.fromJson(s))) : null,
       quantity: (json['quantity'] as num?)?.toDouble(),
       colours: json['colours'] != null ? List<Colour>.from(json['colours'].map((c) => Colour.fromJson(c))) : null,
