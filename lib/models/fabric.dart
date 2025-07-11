@@ -89,7 +89,6 @@ class Fabric extends HiveObject {
   });
 
   factory Fabric.fromJson(Map<String, dynamic> json) {
-    print("🧪 JSON ID brut : ${json['_id']}");
 
     return Fabric(
       id: json['_id'] as String?,

@@ -79,7 +79,6 @@ class _LoginScreenState extends State<LoginScreen> {
 }
 
 Future<bool> loginUser(String email, String password) async {
-  print('loginUser called with email: $email');
 
   try {
     final url = Uri.parse(
@@ -90,9 +89,6 @@ Future<bool> loginUser(String email, String password) async {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email, 'password': password}),
     );
-
-    print('Status Code: ${response.statusCode}');
-    print('Body: ${response.body}');
 
     return response.statusCode == 200;
   } catch (e) {

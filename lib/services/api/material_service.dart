@@ -32,7 +32,6 @@ Future<List<MaterialModel>> fetchMaterials() async {
 }
 
 Future<MaterialModel> saveMaterial(String name) async {
-  print('saveMaterial appelé avec : $name');
   try {
     final url = Uri.parse('http://192.168.1.21:3000/material');
     final response = await http.post(
@@ -40,8 +39,6 @@ Future<MaterialModel> saveMaterial(String name) async {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'name': name}),
     );
-    print('Status code: ${response.statusCode}');
-    print('Response body: ${response.body}');
 
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
@@ -51,9 +48,7 @@ Future<MaterialModel> saveMaterial(String name) async {
         'Erreur lors de la création du matériau : ${response.body}',
       );
     }
-  } catch (e, stack) {
-    print('Exception dans saveMaterial : $e');
-    print(stack);
+  } catch (e) {
     rethrow;
   }
 }

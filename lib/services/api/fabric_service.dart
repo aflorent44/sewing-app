@@ -28,13 +28,11 @@ Future<List<Fabric>> fetchFabrics() async {
       for (final fabric in serverFabrics) {
         
         if (fabric.id == null || fabric.id!.trim().isEmpty) {
-          print("❌ Fabric sans ID, on skip");
           continue;
         }
 
         try {
           await fabricsBox.put(fabric.id, fabric);
-          print("✓ Stocké dans Hive : ${fabric.name}");
         } catch (e) {
           print("❌ Erreur lors du stockage de ${fabric.name} : $e");
         }
@@ -78,7 +76,6 @@ Future<void> saveFabric(Fabric fabric, List<String> toCreateMaterials) async {
   );
 
   if (response.statusCode == 201) {
-    print('Tissu ajouté avec succès');
 
     // (Optionnel mais utile) : enregistrer le _vrai_ id retourné par Mongo
     final data = jsonDecode(response.body);
@@ -115,7 +112,6 @@ Future<void> updateFabric(
   );
 
   if (response.statusCode == 200) {
-    print('Tissu mis à jour avec succès');
   } else {
     print('Erreur : ${response.statusCode} - ${response.body}');
   }
@@ -166,7 +162,6 @@ Future<void> deleteFabric(String id) async {
   final response = await http.delete(url);
 
   if (response.statusCode == 200) {
-    print('Tissu supprimé avec succès');
   } else {
     print('Erreur : ${response.statusCode} - ${response.body}');
   }
@@ -188,9 +183,7 @@ Future<List<Fabric>> fetchFabricsByKeyword(String searchTerm) async {
         'Erreur lors du chargement des tissus: ${response.statusCode}',
       );
     }
-  } catch (e, stacktrace) {
-    print('Erreur dans fetchFabricsByKeyword: $e');
-    print(stacktrace);
+  } catch (e) {
     rethrow; // Remonter l'erreur pour être catchée dans _onKeywordChanged
   }
 }
