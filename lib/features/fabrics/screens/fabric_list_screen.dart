@@ -22,20 +22,30 @@ class _FabricsScreenState extends State<FabricsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize
-              .min, // Pour que la colonne ne prenne pas tout l’espace vertical
-          children: [
-            Text("Liste des tissus"),
-            SizedBox(height: 20),
-            FutureBuilder<List<Fabric>>(
+      appBar: AppBar(title: Text("Liste des tissus")),
+      body: Column(
+        children: [
+          Expanded(
+            child: FutureBuilder<List<Fabric>>(
               future: _futureFabrics,
               builder: (context, snapshot) {
-                if (snapshot.hasData) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Erreur de chargement 😢'));
+                } else if (snapshot.hasData) {
                   final fabrics = snapshot.data!;
+
+                  // 🔍 Petit log pour confirmer ce qui est affiché :
+                  for (final fabric in fabrics) {
+                    print('🧵 Affiché : ${fabric.name} (${fabric.id})');
+                  }
+
+                  if (fabrics.isEmpty) {
+                    return Center(child: Text('Aucun tissu à afficher.'));
+                  }
+
                   return ListView.builder(
-                    shrinkWrap: true,
                     itemCount: fabrics.length,
                     itemBuilder: (context, index) {
                       final fabric = fabrics[index];
@@ -45,14 +55,15 @@ class _FabricsScreenState extends State<FabricsScreen> {
                       );
                     },
                   );
-                } else if (snapshot.hasError) {
-                  return Text('Erreur lors du chargement des tissus');
                 } else {
-                  return CircularProgressIndicator();
+                  return Center(child: Text('Aucun tissu trouvé.'));
                 }
               },
             ),
-            ElevatedButton(
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ElevatedButton.icon(
               onPressed: () async {
                 final result = await showDialog(
                   context: context,
@@ -61,21 +72,15 @@ class _FabricsScreenState extends State<FabricsScreen> {
 
                 if (result == true) {
                   setState(() {
-                    _futureFabrics = fetchFabrics(); // on recharge la liste !
+                    _futureFabrics = fetchFabrics(); // Recharge les données
                   });
                 }
               },
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.add),
-                  SizedBox(width: 8),
-                  Text("Ajouter un tissu"),
-                ],
-              ),
+              icon: Icon(Icons.add),
+              label: Text("Ajouter un tissu"),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -1,17 +1,33 @@
 import 'dart:convert';
+import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:mon_app_couture/models/material_model.dart';
 
 Future<List<MaterialModel>> fetchMaterials() async {
-  final url = Uri.parse('http://192.168.1.21:3000/material');
+  final materialsBox = Hive.box<MaterialModel>('materials');
 
-  final response = await http.get(url);
+  try {
+    final url = Uri.parse('http://192.168.1.21:3000/material');
+    final response = await http.get(url);
 
-  if (response.statusCode == 200) {
-    final List<dynamic> data = jsonDecode(response.body);
-    return data.map((json) => MaterialModel.fromJson(json)).toList();
-  } else {
-    throw Exception('Erreur lors du chargement des matériaux');
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+
+      final List<MaterialModel> serverMaterials = data.map((json) {
+        final material = MaterialModel.fromJson(json);
+        return material;
+      }).toList();
+
+      for (final material in serverMaterials) {
+        await materialsBox.put(material.id, material);
+      }
+
+      return serverMaterials;
+    } else {
+      throw Exception('Erreur lors du chargement des matériaux');
+    }
+  } catch (e) {
+    return materialsBox.values.toList();
   }
 }
 
@@ -40,4 +56,9 @@ Future<MaterialModel> saveMaterial(String name) async {
     print(stack);
     rethrow;
   }
+}
+
+Future<void> saveMaterialOffline(MaterialModel material) async {
+  final materialsBox = Hive.box<MaterialModel>('materials');
+  await materialsBox.put(material.id, material);
 }

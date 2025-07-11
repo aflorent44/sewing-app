@@ -1,15 +1,32 @@
+import 'package:hive/hive.dart';
+
+part 'colour.g.dart';
+
+@HiveType(typeId: 3)
 enum Colour {
+  @HiveField(0)
   black,
+  @HiveField(1)
   blue,
+  @HiveField(2)
   brown,
+  @HiveField(3)
   gray,
+  @HiveField(4)
   green,
+  @HiveField(5)
   orange,
+  @HiveField(6)
   pink,
+  @HiveField(7)
   purple,
+  @HiveField(8)
   red,
+  @HiveField(9)
   white,
+  @HiveField(10)
   yellow,
+  @HiveField(11)
   beige;
 
   static Colour fromJson(String name) {
@@ -29,7 +46,7 @@ extension ColourExtension on Colour {
         return '🔵';
       case Colour.brown:
         //emoji marron
-        return '🟤';        
+        return '🟤';
       case Colour.gray:
         //emoji d'immeuble gris
         return '🏢';

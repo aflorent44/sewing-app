@@ -1,69 +1,92 @@
 import 'dart:convert';
+import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
-import 'package:mon_app_couture/models/enums/colour.dart';
-import 'package:mon_app_couture/models/enums/season.dart';
 import 'package:mon_app_couture/models/material_model.dart';
 import 'package:mon_app_couture/services/api/material_service.dart';
 import '../../models/fabric.dart';
 
 Future<List<Fabric>> fetchFabrics() async {
-  final url = Uri.parse(
-    'http://192.168.1.21:3000/fabric',
-  ); // Mets ton IP locale
+  final fabricsBox = Hive.box<Fabric>('fabrics');
 
-  final response = await http.get(url);
+  try {
+    final url = Uri.parse('http://192.168.1.21:3000/fabric');
+    final response = await http.get(url);
 
-  if (response.statusCode == 200) {
-    final List<dynamic> data = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
 
-    return data.map((json) => Fabric.fromJson(json)).toList();
-  } else {
-    throw Exception('Erreur lors du chargement des tissus');
+      // 1. Tissus depuis le serveur
+      final List<Fabric> serverFabrics = data.map((json) {
+        final fabric = Fabric.fromJson(json);
+        fabric.isSynced = true;
+        return fabric;
+      }).toList();
+
+
+      // 2. Stockage dans Hive
+      for (final fabric in serverFabrics) {
+        
+        if (fabric.id == null || fabric.id!.trim().isEmpty) {
+          print("❌ Fabric sans ID, on skip");
+          continue;
+        }
+
+        try {
+          await fabricsBox.put(fabric.id, fabric);
+          print("✓ Stocké dans Hive : ${fabric.name}");
+        } catch (e) {
+          print("❌ Erreur lors du stockage de ${fabric.name} : $e");
+        }
+
+      }
+      // 3. Tissus locaux non synchronisés
+      final unsyncedFabrics = fabricsBox.values
+          .where((f) => f.isSynced == false)
+          .toList();
+
+      // 4. Retourne la fusion des deux
+      return [...serverFabrics, ...unsyncedFabrics];
+    } else {
+      throw Exception('Erreur lors du chargement des tissus');
+    }
+  } catch (e) {
+    // En cas d’erreur réseau → tous les tissus locaux (synced + non synced)
+    return fabricsBox.values.toList();
   }
 }
 
-Future<void> saveFabric(
-  String name,
-  String description,
-  String quantity,
-  String width,
-  List<Season> seasons,
-  List<Colour> colours,
-  List<MaterialModel> selectedMaterials,
-  List<String> toCreateMaterials,
-  String notes,
-) async {
+Future<void> saveFabric(Fabric fabric, List<String> toCreateMaterials) async {
   List<MaterialModel> savedMaterials = [];
 
-  // 1. Enregistrer les nouveaux matériaux à créer un par un
   for (final newMatName in toCreateMaterials) {
     final createdMat = await saveMaterial(newMatName);
     savedMaterials.add(createdMat);
   }
 
-  // 2. Ajouter les matériaux déjà existants sélectionnés
-  savedMaterials.addAll(selectedMaterials);
+  savedMaterials.addAll(fabric.materials ?? []);
 
-  // 3. Poster le tissu avec la liste complète des matériaux (existant + créés)
+  // On clone le JSON sans le champ 'id' pour ne PAS l’envoyer
+  final fabricJson = fabric.toJson()
+    ..remove('id') // Important ! On ne veut pas envoyer l’id local à Mongo
+    ..['materials'] = savedMaterials.map((m) => m.id).toList();
+
   final url = Uri.parse('http://192.168.1.21:3000/fabric');
 
   final response = await http.post(
     url,
     headers: {'Content-Type': 'application/json'},
-    body: jsonEncode({
-      'name': name,
-      'description': description,
-      'quantity': double.tryParse(quantity) ?? 0.0,
-      'width': double.tryParse(width) ?? 0,
-      'seasons': seasons.map((s) => s.name).toList(),
-      'colours': colours.map((c) => c.name).toList(),
-      'materials': savedMaterials.map((m) => m.id).toList(),
-      'notes': notes,
-    }),
+    body: jsonEncode(fabricJson),
   );
 
   if (response.statusCode == 201) {
     print('Tissu ajouté avec succès');
+
+    // (Optionnel mais utile) : enregistrer le _vrai_ id retourné par Mongo
+    final data = jsonDecode(response.body);
+    final newId = data['_id'];
+    final updatedFabric = fabric.copyWith(id: newId, isSynced: true);
+
+    await Hive.box<Fabric>('fabrics').put(newId, updatedFabric);
   } else {
     print('Erreur : ${response.statusCode} - ${response.body}');
   }
@@ -71,15 +94,8 @@ Future<void> saveFabric(
 
 Future<void> updateFabric(
   String id,
-  String name,
-  String description,
-  String quantity,
-  String width,
-  List<Season> seasons,
-  List<Colour> colours,
-  List<MaterialModel> selectedMaterials,
+  Fabric fabric,
   List<String> toCreateMaterials,
-  String notes,
 ) async {
   List<MaterialModel> savedMaterials = [];
 
@@ -88,7 +104,7 @@ Future<void> updateFabric(
     savedMaterials.add(createdMat);
   }
 
-  savedMaterials.addAll(selectedMaterials);
+  savedMaterials.addAll(fabric.materials ?? []);
 
   final url = Uri.parse('http://192.168.1.21:3000/fabric/$id');
 
@@ -96,14 +112,8 @@ Future<void> updateFabric(
     url,
     headers: {'Content-Type': 'application/json'},
     body: jsonEncode({
-      'name': name,
-      'description': description,
-      'quantity': double.tryParse(quantity) ?? 0.0,
-      'width': double.tryParse(width) ?? 0,
-      'seasons': seasons.map((s) => s.name).toList(),
-      'colours': colours.map((c) => c.name).toList(),
-      'materials': savedMaterials.map((mat) => mat.id).toList(),
-      'notes': notes,
+      ...fabric.toJson(),
+      'materials': savedMaterials.map((m) => m.id).toList(),
     }),
   );
 
@@ -114,9 +124,48 @@ Future<void> updateFabric(
   }
 }
 
+Future<void> saveFabricOffline(Fabric fabric) async {
+  final fabricsBox = Hive.box<Fabric>('fabrics');
+  fabric.isSynced = false;
+  await fabricsBox.put(fabric.id, fabric);
+}
+
+Future<void> updateFabricOffline(Fabric fabric) async {
+  final fabricsBox = Hive.box<Fabric>('fabrics');
+  fabric.isSynced = false;
+  await fabricsBox.put(fabric.id, fabric);
+}
+
+Future<void> deleteFabricOffline(String id) async {
+  final fabricsBox = Hive.box<Fabric>('fabrics');
+  await fabricsBox.delete(id);
+}
+
+// Future<void> syncFabrics() async {
+//   final fabricsBox = Hive.box<Fabric>('fabrics');
+//   final unsynced = fabricsBox.values.where((f) => !f.isSynced);
+
+//   for (final fabric in unsynced) {
+//     try {
+//       final response = await http.put(
+//         Uri.parse('http://192.168.1.21:3000/fabric/${fabric.id}'),
+//         headers: {'Content-Type': 'application/json'},
+//         body: jsonEncode(fabric.toJson()),
+//       );
+
+//       if (response.statusCode == 200) {
+//         fabric.isSynced = true;
+//         await fabricsBox.put(fabric.id, fabric);
+//       }
+//     } catch (e) {
+//       // Pas grave, on réessaiera plus tard
+//     }
+//   }
+// }
+
 Future<void> deleteFabric(String id) async {
   final url = Uri.parse('http://192.168.1.21:3000/fabric/$id');
-
+  deleteFabricOffline(id);
   final response = await http.delete(url);
 
   if (response.statusCode == 200) {

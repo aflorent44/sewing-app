@@ -1,7 +1,16 @@
+import 'package:hive/hive.dart';
+
+part 'season.g.dart';
+
+@HiveType(typeId: 2)
 enum Season {
+  @HiveField(0)
   spring,
+  @HiveField(1)
   summer,
+  @HiveField(2)
   autumn,
+  @HiveField(3)
   winter;
 
   static Season fromJson(String value) {
