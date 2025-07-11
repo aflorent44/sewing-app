@@ -90,7 +90,7 @@ class Fabric extends HiveObject {
 
   factory Fabric.fromJson(Map<String, dynamic> json) {
     print("🧪 JSON ID brut : ${json['_id']}");
-    
+
     return Fabric(
       id: json['_id'] as String?,
       name: json['name'] as String,
@@ -99,17 +99,46 @@ class Fabric extends HiveObject {
       brand: json['brand'] != null ? Brand.fromJson(json['brand']) : null,
       weave: json['weave'] as String?,
       materials: json['materials'] != null
-          ? (json['materials'] as List)
-                .map((m) => MaterialModel.fromJson(m))
-                .toList()
+          ? (json['materials'] as List<dynamic>).map((m) {
+              if (m is String) {
+                // Si c'est juste un ID, crée un MaterialModel avec juste l'id
+                return MaterialModel(id: m, name: '');
+              } else {
+                // Sinon c'est un Map, on parse normalement
+                return MaterialModel.fromJson(m);
+              }
+            }).toList()
           : null,
-      seasons: json['seasons'] != null
-          ? (json['seasons'] as List).map((s) => Season.fromJson(s)).toList()
-          : null,
+      // materials: json['materials'] != null
+      //     ? (json['materials'] as List)
+      //           .map((m) => MaterialModel.fromJson(m))
+      //           .toList()
+      //     : null,
+      // seasons: json['seasons'] != null
+      //     ? (json['seasons'] as List).map((s) => Season.fromJson(s)).toList()
+      //     : null,
+      seasons:
+          (json['seasons'] as List<dynamic>?)
+              ?.map(
+                (s) => s is String
+                    ? Season.values.firstWhere((e) => e.name == s)
+                    : Season.fromJson(s),
+              )
+              .toList() ??
+          [],
       quantity: (json['quantity'] as num?)?.toDouble(),
-      colours: json['colours'] != null
-          ? (json['colours'] as List).map((c) => Colour.fromJson(c)).toList()
-          : null,
+      // colours: json['colours'] != null
+      //     ? (json['colours'] as List).map((c) => Colour.fromJson(c)).toList()
+      //     : null,
+      colours:
+          (json['colours'] as List<dynamic>?)
+              ?.map(
+                (c) => c is String
+                    ? Colour.values.firstWhere((e) => e.name == c)
+                    : Colour.fromJson(c),
+              )
+              .toList() ??
+          [],
       width: json['width'] as int?,
       extensiveness: (json['extensiveness'] as num?)?.toDouble(),
       price: (json['price'] as num?)?.toDouble(),

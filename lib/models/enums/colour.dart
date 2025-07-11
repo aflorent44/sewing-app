@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 part 'colour.g.dart';
@@ -75,5 +76,34 @@ extension ColourExtension on Colour {
         //emoji tête d'humain beige
         return '🧑🏻';
     }
+  }
+}
+
+Color mapColourToColor(Colour colour) {
+  switch (colour) {
+    case Colour.black:
+      return Colors.black;
+    case Colour.blue:
+      return Colors.blue;
+    case Colour.brown:
+      return Colors.brown;
+    case Colour.gray:
+      return Colors.grey;
+    case Colour.green:
+      return Colors.green;
+    case Colour.orange:
+      return Colors.orange;
+    case Colour.pink:
+      return Colors.pink;
+    case Colour.purple:
+      return Colors.purple;
+    case Colour.red:
+      return Colors.red;
+    case Colour.white:
+      return Colors.white;
+    case Colour.yellow:
+      return Colors.yellow;
+    case Colour.beige:
+      return Color.fromARGB(255, 228, 180, 162);
   }
 }

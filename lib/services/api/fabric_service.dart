@@ -5,12 +5,13 @@ import 'package:mon_app_couture/models/material_model.dart';
 import 'package:mon_app_couture/services/api/material_service.dart';
 import '../../models/fabric.dart';
 
+final baseUrl = 'http://192.168.1.21:3000/fabric';
+
 Future<List<Fabric>> fetchFabrics() async {
   final fabricsBox = Hive.box<Fabric>('fabrics');
 
   try {
-    final url = Uri.parse('http://192.168.1.21:3000/fabric');
-    final response = await http.get(url);
+    final response = await http.get(Uri.parse(baseUrl));
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
@@ -70,10 +71,8 @@ Future<void> saveFabric(Fabric fabric, List<String> toCreateMaterials) async {
     ..remove('id') // Important ! On ne veut pas envoyer l’id local à Mongo
     ..['materials'] = savedMaterials.map((m) => m.id).toList();
 
-  final url = Uri.parse('http://192.168.1.21:3000/fabric');
-
   final response = await http.post(
-    url,
+    Uri.parse(baseUrl),
     headers: {'Content-Type': 'application/json'},
     body: jsonEncode(fabricJson),
   );
@@ -106,10 +105,8 @@ Future<void> updateFabric(
 
   savedMaterials.addAll(fabric.materials ?? []);
 
-  final url = Uri.parse('http://192.168.1.21:3000/fabric/$id');
-
   final response = await http.put(
-    url,
+    Uri.parse('$baseUrl/$id'),
     headers: {'Content-Type': 'application/json'},
     body: jsonEncode({
       ...fabric.toJson(),
@@ -164,7 +161,7 @@ Future<void> deleteFabricOffline(String id) async {
 // }
 
 Future<void> deleteFabric(String id) async {
-  final url = Uri.parse('http://192.168.1.21:3000/fabric/$id');
+  final url = Uri.parse('$baseUrl/$id');
   deleteFabricOffline(id);
   final response = await http.delete(url);
 
@@ -174,3 +171,27 @@ Future<void> deleteFabric(String id) async {
     print('Erreur : ${response.statusCode} - ${response.body}');
   }
 }
+
+Future<List<Fabric>> fetchFabricsByKeyword(String searchTerm) async {
+  try {
+    final encodedSearchTerm = Uri.encodeQueryComponent(
+      searchTerm,
+    );
+    final url = Uri.parse('$baseUrl/?search=$encodedSearchTerm');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((json) => Fabric.fromJson(json)).toList();
+    } else {
+      throw Exception(
+        'Erreur lors du chargement des tissus: ${response.statusCode}',
+      );
+    }
+  } catch (e, stacktrace) {
+    print('Erreur dans fetchFabricsByKeyword: $e');
+    print(stacktrace);
+    rethrow; // Remonter l'erreur pour être catchée dans _onKeywordChanged
+  }
+}
+
