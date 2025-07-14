@@ -89,7 +89,6 @@ class Fabric extends HiveObject {
   });
 
   factory Fabric.fromJson(Map<String, dynamic> json) {
-
     return Fabric(
       id: json['_id'] as String?,
       name: json['name'] as String,
@@ -100,22 +99,14 @@ class Fabric extends HiveObject {
       materials: json['materials'] != null
           ? (json['materials'] as List<dynamic>).map((m) {
               if (m is String) {
-                // Si c'est juste un ID, crée un MaterialModel avec juste l'id
                 return MaterialModel(id: m, name: '');
-              } else {
-                // Sinon c'est un Map, on parse normalement
+              } else if (m is Map<String, dynamic>) {
                 return MaterialModel.fromJson(m);
+              } else {
+                throw Exception('Format inattendu pour material: $m');
               }
             }).toList()
           : null,
-      // materials: json['materials'] != null
-      //     ? (json['materials'] as List)
-      //           .map((m) => MaterialModel.fromJson(m))
-      //           .toList()
-      //     : null,
-      // seasons: json['seasons'] != null
-      //     ? (json['seasons'] as List).map((s) => Season.fromJson(s)).toList()
-      //     : null,
       seasons:
           (json['seasons'] as List<dynamic>?)
               ?.map(
@@ -126,9 +117,6 @@ class Fabric extends HiveObject {
               .toList() ??
           [],
       quantity: (json['quantity'] as num?)?.toDouble(),
-      // colours: json['colours'] != null
-      //     ? (json['colours'] as List).map((c) => Colour.fromJson(c)).toList()
-      //     : null,
       colours:
           (json['colours'] as List<dynamic>?)
               ?.map(

@@ -29,7 +29,7 @@ class _CustomAutocompleteFieldState<T extends Object>
   late final FocusNode _focusNode;
   late final VoidCallback _textListener;
   String _currentInput = '';
-  List<String> _toCreate = [];
+  final List<String> _toCreate = [];
 
   @override
   void initState() {
@@ -126,25 +126,25 @@ class _CustomAutocompleteFieldState<T extends Object>
               (option) =>
                   widget.itemLabelBuilder(option).toLowerCase() == lowerInput,
             );
-
             if (_currentInput.length >= 3 && !hasExactMatch) {
-              // On ajoute une entrée "Créer"
-              return ListTile(
-                leading: const Icon(Icons.add),
-                title: Text("Créer \"$_currentInput\""),
-                onTap: () {
-                  if (!_toCreate.contains(_currentInput)) {
-                    _toCreate.add(_currentInput);
-                    widget.onToCreateChanged?.call(_toCreate);
-                  }
-                  _controller.clear();
-                  setState(() {
-                    _currentInput = '';
-                  });
-                },
+              Container(
+                color: Colors.grey[200],
+                child: ListTile(
+                  leading: const Icon(Icons.add),
+                  title: Text('Créer "$_currentInput"'),
+                  onTap: () {
+                    if (!_toCreate.contains(_currentInput)) {
+                      _toCreate.add(_currentInput);
+                      widget.onToCreateChanged?.call(_toCreate);
+                    }
+                    _controller.clear();
+                    setState(() {
+                      _currentInput = '';
+                    });
+                  },
+                ),
               );
             }
-
             return Align(
               alignment: Alignment.topLeft,
               child: Material(

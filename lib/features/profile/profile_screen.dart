@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mon_app_couture/core/theme.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -27,6 +29,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   /// Affiche l'écran du profil avec un bouton pour se déconnecter.
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
       body: Center(
         child: Column(
@@ -36,6 +39,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Text("Profil"),
             SizedBox(height: 20), // Un espace entre les widgets
             Text("Email: $_email"),
+            SizedBox(height: 20),
+            Text("Choisir le thème"),
+            IconButton(
+                icon: Icon(
+                themeProvider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+              ),
+              onPressed: () => Provider.of<ThemeProvider>(context, listen:false).toggleTheme(),
+            ),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {

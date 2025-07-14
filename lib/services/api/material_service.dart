@@ -18,10 +18,9 @@ Future<List<MaterialModel>> fetchMaterials() async {
         return material;
       }).toList();
 
-      for (final material in serverMaterials) {
-        await materialsBox.put(material.id, material);
-      }
-
+      // for (final material in serverMaterials) {
+      //   await materialsBox.put(material.id, material);
+      // }
       return serverMaterials;
     } else {
       throw Exception('Erreur lors du chargement des matériaux');

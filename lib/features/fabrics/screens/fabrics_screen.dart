@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mon_app_couture/features/fabrics/controllers/fabrics_controller.dart';
 import 'package:mon_app_couture/features/fabrics/widgets/fabrics_body.dart';
+import 'package:mon_app_couture/features/fabrics/widgets/filters/fabric_filters_bar.dart';
 import 'package:mon_app_couture/models/fabric.dart';
 import 'package:mon_app_couture/features/fabrics/dialogs/fabric_form_dialog.dart';
 import 'package:mon_app_couture/services/api/fabric_service.dart';
@@ -16,6 +17,7 @@ class FabricsScreen extends StatefulWidget {
 class _FabricsScreenState extends State<FabricsScreen> {
   final FabricsController controller = FabricsController();
 
+  bool _showFilters = false;
   List<Fabric> filteredFabrics = [];
   bool _isLoading = false;
   bool _hasError = false;
@@ -88,15 +90,43 @@ class _FabricsScreenState extends State<FabricsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Liste des tissus")),
-      body: FabricsBody(
-        filters: filters,
-        onFiltersChanged: _onFiltersChanged,
-        fabrics: filteredFabrics,
-        isLoading: _isLoading,
-        hasError: _hasError,
-        openFabricForm: _openFabricForm,
+      appBar: AppBar(
+        title: const Text("Liste des tissus"),
+        actions: [
+          IconButton(
+            icon: Icon(_showFilters ? Icons.filter_alt_off : Icons.filter_alt),
+            tooltip: _showFilters
+                ? 'Masquer les filtres'
+                : 'Afficher les filtres',
+            onPressed: () {
+              setState(() {
+                _showFilters = !_showFilters;
+              });
+            },
+          ),
+        ],
       ),
+
+      body: Column(children: [
+        if (_showFilters)
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: FabricFiltersBar(
+              filters: filters,
+              onFiltersChanged: _onFiltersChanged,
+            ),
+          ),
+          Expanded(child: FabricsBody(
+              filters: filters,
+              onFiltersChanged: _onFiltersChanged,
+              fabrics: filteredFabrics,
+              isLoading: _isLoading,
+              hasError: _hasError,
+              openFabricForm: _openFabricForm,
+            ),
+          )
+      ])
+       
     );
   }
 }

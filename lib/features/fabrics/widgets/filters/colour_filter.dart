@@ -14,7 +14,7 @@ class ColourFilter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Wrap(
-      spacing: 8,
+      spacing: 4,
       children: Colour.values.map((colour) {
         final isSelected = selectedColours.contains(colour);
         return FilterChip(

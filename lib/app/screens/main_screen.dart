@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mon_app_couture/features/fabrics/screens/fabric_list_screen.dart';
+import 'package:mon_app_couture/features/fabrics/screens/fabrics_screen.dart';
 import 'package:mon_app_couture/features/patterns/screens/patterns_screen.dart';
 import 'package:mon_app_couture/features/profile/profile_screen.dart';
 import 'package:mon_app_couture/features/projects/screens/projects_screen.dart';
@@ -14,7 +14,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
-final List<Widget> _pages = [
+  late final List<Widget> _pages = [
     FabricsScreen(),
     PatternsScreen(),
     ProjectsScreen(),
@@ -34,8 +34,11 @@ final List<Widget> _pages = [
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: const Color.fromARGB(255, 161, 93, 152),
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: Theme.of(context).colorScheme.primary,
+        unselectedItemColor: Theme.of(
+          context,
+        ).colorScheme.onSurface.withValues(alpha: 0.6),
+        backgroundColor: Theme.of(context).bottomAppBarTheme.color,
         onTap: (index) {
           setState(() {
             _selectedIndex = index;
