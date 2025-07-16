@@ -1,6 +1,6 @@
 import 'package:hive/hive.dart';
 
-part 'material_model.g.dart'; // 1 fichier à créer via build_runner
+part 'material_model.g.dart'; 
 
 @HiveType(typeId: 0) // Chaque typeId doit être unique dans ton projet Hive
 class MaterialModel extends HiveObject {

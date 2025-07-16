@@ -3,13 +3,15 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mon_app_couture/models/enums/colour.dart';
+import 'package:mon_app_couture/models/enums/fabric_type.dart';
 import 'package:mon_app_couture/models/enums/season.dart';
 import 'package:mon_app_couture/models/fabric.dart';
 import 'package:mon_app_couture/models/material_model.dart';
 import 'package:mon_app_couture/services/api/fabric_service.dart';
 import 'package:mon_app_couture/services/api/material_service.dart';
-import 'package:mon_app_couture/shared/custom_fields.dart/custom_autocomplete_field.dart';
+import 'package:mon_app_couture/shared/custom_fields.dart/custom_multiselect_autocomplete_field.dart';
 import 'package:mon_app_couture/shared/custom_fields.dart/custom_chip_field.dart';
+import 'package:mon_app_couture/shared/custom_fields.dart/custom_multiselect_chip_field.dart';
 import 'package:mon_app_couture/shared/custom_fields.dart/custom_numeric_field.dart';
 import 'package:mon_app_couture/shared/custom_fields.dart/custom_text_field.dart';
 
@@ -19,9 +21,13 @@ class FabricFormData {
   String description;
   double quantity;
   int width;
+  double extensiveness;
+  double price;
   List<Season> seasons;
   List<Colour> colours;
+  FabricType type;
   List<MaterialModel> materials;
+  String brand;
   String notes;
 
   FabricFormData({
@@ -30,15 +36,18 @@ class FabricFormData {
     this.description = '',
     this.quantity = 0.0,
     this.width = 0,
+    this.extensiveness = 0.0,
+    this.price = 0.0,
     List<Season>? seasons,
     List<Colour>? colours,
+    this.type = FabricType.woven,
     List<MaterialModel>? materials,
+    this.brand = '',
     this.notes = '',
   }) : seasons = seasons ?? [],
        colours = colours ?? [],
        materials = materials ?? [];
 
-  // Crée un Fabric à partir des données du formulaire
   Fabric toFabric() {
     return Fabric(
       id: id,
@@ -46,9 +55,13 @@ class FabricFormData {
       description: description,
       quantity: quantity,
       width: width,
+      extensiveness: extensiveness,
+      price: price,
       seasons: seasons,
       colours: colours,
+      type: type,
       materials: materials,
+      brand: brand,
       notes: notes,
     );
   }
@@ -57,7 +70,7 @@ class FabricFormData {
 class FabricFormDialog extends StatefulWidget {
   final Fabric? fabric;
 
-  const FabricFormDialog({Key? key, this.fabric}) : super(key: key);
+  const FabricFormDialog({super.key, this.fabric});
 
   @override
   State<FabricFormDialog> createState() => _FabricFormDialogState();
@@ -76,7 +89,6 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
   void initState() {
     super.initState();
 
-    // Initialise _formData selon qu'on édite ou crée un nouveau tissu
     final f = widget.fabric;
     _formData = FabricFormData(
       id: f?.id,
@@ -84,9 +96,13 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
       description: f?.description ?? '',
       quantity: f?.quantity ?? 0.0,
       width: f?.width ?? 0,
+      extensiveness: f?.extensiveness ?? 0.0,
+      price: f?.price ?? 0.0,
+      type: f?.type ?? FabricType.woven,
       seasons: f?.seasons ?? [],
       colours: f?.colours ?? [],
       materials: f?.materials ?? [],
+      brand: f?.brand ?? '',
       notes: f?.notes ?? '',
     );
 
@@ -120,7 +136,7 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
 
     final fabric = _formData.toFabric();
 
-    saveFabricOffline(fabric); // Sauvegarde locale immédiate
+    saveFabricOffline(fabric);
 
     final isEditing = widget.fabric != null;
 
@@ -161,148 +177,208 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
       child: Container(
         width: 600,
         padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  isEditing ? 'Modifier le tissu' : 'Ajouter un tissu',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                CustomTextField(
-                  label: 'Nom du tissu',
-                  initialValue: _formData.name,
-                  validator: (v) => (v == null || v.isEmpty)
-                      ? 'Veuillez saisir le nom du tissu'
-                      : null,
-                  onSaved: (v) => _formData.name = v ?? '',
-                ),
-                CustomTextField(
-                  label: 'Description',
-                  initialValue: _formData.description,
-                  onSaved: (v) => _formData.description = v ?? '',
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: CustomNumericField(
-                        label: 'Quantité (en m)',
-                        initialValue: _formData.quantity.toString(),
-                        onSaved: (v) => _formData.quantity =
-                            double.tryParse(v ?? '') ?? 0.0,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: CustomNumericField(
-                        label: 'Laize (en cm)',
-                        initialValue: _formData.width.toString(),
-                        onSaved: (v) =>
-                            _formData.width = int.tryParse(v ?? '') ?? 0,
-                      ),
-                    ),
-                  ],
-                ),
-                CustomChipField<Season>(
-                  label: 'Saisons',
-                  values: Season.values,
-                  selected: _formData.seasons,
-                  onChanged: (val) => setState(() => _formData.seasons = val),
-                  labelBuilder: (s) => s.label,
-                ),
-                CustomChipField<Colour>(
-                  label: 'Couleurs',
-                  values: Colour.values,
-                  selected: _formData.colours,
-                  onChanged: (val) => setState(() => _formData.colours = val),
-                  labelBuilder: (c) => c.label,
-                ),
-                CustomAutocompleteField<MaterialModel>(
-                  label: 'Matières',
-                  options: _availableMaterials,
-                  selected: _formData.materials,
-                  itemLabelBuilder: (m) => m.name,
-                  onChanged: (val) => setState(() => _formData.materials = val),
-                  onToCreateChanged: (val) =>
-                      setState(() => _toCreateMaterials = val),
-                ),
-                CustomTextField(
-                  label: 'Notes',
-                  initialValue: _formData.notes,
-                  onSaved: (v) => _formData.notes = v ?? '',
-                ),
-                const SizedBox(height: 16),
-                if (_image != null)
-                  Image.file(
-                    _image!,
-                    width: 200,
-                    height: 200,
-                    fit: BoxFit.cover,
-                  )
-                else
-                  const Text('Aucune image sélectionnée'),
-                const SizedBox(height: 8),
-                ElevatedButton.icon(
-                  onPressed: _takePhoto,
-                  icon: const Icon(Icons.camera_alt),
-                  label: const Text('Prendre une photo'),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    ElevatedButton(
-                      onPressed: _onSubmit,
-                      child: Text(buttonText),
-                    ),
-                    if (isEditing)
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                        ),
-                        onPressed: () async {
-                          final confirm = await showDialog<bool>(
-                            context: context,
-                            builder: (ctx) => AlertDialog(
-                              title: const Text('Confirmation'),
-                              content: const Text(
-                                'Voulez-vous vraiment supprimer ce tissu ?',
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx, false),
-                                  child: const Text('Annuler'),
-                                ),
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx, true),
-                                  child: const Text('Supprimer'),
-                                ),
-                              ],
-                            ),
-                          );
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            displayForm(isEditing),
+            displayButtons(buttonText, isEditing),
+          ],
+        ),
+      ),
+    );
+  }
 
-                          if (confirm == true) {
-                            await deleteFabric(widget.fabric!.id!);
-                            if (!context.mounted) return;
-                            Navigator.pop(context, true);
-                          }
-                        },
-                        child: const Icon(Icons.delete, color: Colors.white),
-                      ),
-                  ],
+  Widget displayForm(bool isEditing) {
+    return Expanded(
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                isEditing ? 'Modifier le tissu' : 'Ajouter un tissu',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 16),
+
+              CustomTextField(
+                label: 'Nom du tissu',
+                initialValue: _formData.name,
+                validator: (v) => (v == null || v.isEmpty)
+                    ? 'Veuillez saisir le nom du tissu'
+                    : null,
+                onSaved: (v) => _formData.name = v ?? '',
+              ),
+
+              CustomTextField(
+                label: 'Description',
+                initialValue: _formData.description,
+                onSaved: (v) => _formData.description = v ?? '',
+              ),
+
+              CustomTextField(
+                label: 'Marque ou boutique',
+                initialValue: _formData.brand,
+                onSaved: (v) => _formData.brand = v ?? '',
+              ),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: CustomNumericField(
+                      label: 'Quantité (en m)',
+                      initialValue: _formData.quantity.toString(),
+                      onSaved: (v) =>
+                          _formData.quantity = double.tryParse(v ?? '') ?? 0.0,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: CustomNumericField(
+                      label: 'Laize (en cm)',
+                      initialValue: _formData.width.toString(),
+                      onSaved: (v) =>
+                          _formData.width = int.tryParse(v ?? '') ?? 0,
+                    ),
+                  ),
+                ],
+              ),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: CustomNumericField(
+                      label: 'Taux d\'extensivité',
+                      initialValue: _formData.extensiveness.toString(),
+                      onSaved: (v) => _formData.extensiveness =
+                          double.tryParse(v ?? '') ?? 0.0,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: CustomNumericField(
+                      label: 'Prix (en €/m)',
+                      initialValue: _formData.price.toString(),
+                      onSaved: (v) =>
+                          _formData.price = double.tryParse(v ?? '') ?? 0,
+                    ),
+                  ),
+                ],
+              ),
+
+              CustomMultiselectChipField<Season>(
+                label: 'Saisons',
+                values: Season.values,
+                selected: _formData.seasons,
+                onChanged: (val) => setState(() => _formData.seasons = val),
+                labelBuilder: (s) => s.label,
+              ),
+
+              CustomMultiselectChipField<Colour>(
+                label: 'Couleurs',
+                values: Colour.values,
+                selected: _formData.colours,
+                onChanged: (val) => setState(() => _formData.colours = val),
+                labelBuilder: (c) => c.label,
+              ),
+
+              const SizedBox(height: 16),
+
+              CustomChipField<FabricType>(
+                label: "Type de tissage",
+                values: FabricType.values,
+                selected: _formData.type,
+                onChanged: (val) => setState(() => _formData.type = val),
+                labelBuilder: (t) => t.label,
+              ),
+
+              const SizedBox(height: 16),
+
+              CustomMultiselectAutocompleteField<MaterialModel>(
+                label: 'Matières',
+                options: _availableMaterials,
+                selected: _formData.materials,
+                itemLabelBuilder: (m) => m.name,
+                onChanged: (val) => setState(() => _formData.materials = val),
+                onToCreateChanged: (val) =>
+                    setState(() => _toCreateMaterials = val),
+              ),
+
+              CustomTextField(
+                label: 'Notes',
+                initialValue: _formData.notes,
+                onSaved: (v) => _formData.notes = v ?? '',
+              ),
+
+              const SizedBox(height: 16),
+
+              if (_image != null)
+                Image.file(_image!, width: 200, height: 200, fit: BoxFit.cover)
+              else
+                const Text('Aucune image sélectionnée'),
+
+              const SizedBox(height: 8),
+
+              ElevatedButton.icon(
+                onPressed: _takePhoto,
+                icon: const Icon(Icons.camera_alt),
+                label: const Text('Prendre une photo'),
+              ),
+            ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget displayButtons(String buttonText, bool isEditing) {
+    return Column(
+      children: [
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ElevatedButton(onPressed: _onSubmit, child: Text(buttonText)),
+            if (isEditing)
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                onPressed: () async {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Confirmation'),
+                      content: const Text(
+                        'Voulez-vous vraiment supprimer ce tissu ?',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: const Text('Annuler'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, true),
+                          child: const Text('Supprimer'),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (confirm == true) {
+                    await deleteFabric(widget.fabric!.id!);
+                    if (!context.mounted) return;
+                    Navigator.pop(context, true);
+                  }
+                },
+                child: const Icon(Icons.delete, color: Colors.white),
+              ),
+          ],
+        ),
+      ],
     );
   }
 }

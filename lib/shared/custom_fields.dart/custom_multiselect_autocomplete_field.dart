@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class CustomAutocompleteField<T extends Object> extends StatefulWidget {
+class CustomMultiselectAutocompleteField<T extends Object> extends StatefulWidget {
   final String label;
   final List<T> options;
   final List<T> selected;
@@ -8,7 +8,7 @@ class CustomAutocompleteField<T extends Object> extends StatefulWidget {
   final void Function(List<T>) onChanged;
   final void Function(List<String>)? onToCreateChanged;
 
-  const CustomAutocompleteField({
+  const CustomMultiselectAutocompleteField({
     super.key,
     required this.label,
     required this.options,
@@ -19,12 +19,12 @@ class CustomAutocompleteField<T extends Object> extends StatefulWidget {
   });
 
   @override
-  State<CustomAutocompleteField<T>> createState() =>
-      _CustomAutocompleteFieldState<T>();
+  State<CustomMultiselectAutocompleteField<T>> createState() =>
+      _CustomMultiselectAutocompleteFieldState<T>();
 }
 
-class _CustomAutocompleteFieldState<T extends Object>
-    extends State<CustomAutocompleteField<T>> {
+class _CustomMultiselectAutocompleteFieldState<T extends Object>
+    extends State<CustomMultiselectAutocompleteField<T>> {
   late final TextEditingController _controller;
   late final FocusNode _focusNode;
   late final VoidCallback _textListener;

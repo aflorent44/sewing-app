@@ -21,7 +21,7 @@ class FabricAdapter extends TypeAdapter<Fabric> {
       name: fields[1] as String,
       description: fields[2] as String?,
       type: fields[3] as FabricType?,
-      brand: fields[4] as Brand?,
+      brand: fields[4] as String?,
       weave: fields[5] as String?,
       materials: (fields[6] as List?)?.cast<MaterialModel>(),
       seasons: (fields[7] as List?)?.cast<Season>(),

@@ -18,14 +18,14 @@ class FabricsController {
           ? fabric.quantity! >= filters.minRequiredQuantity
           : false;
 
+      final search = filters.searchTerm.toLowerCase();
+
       final matchesSearch = filters.searchTerm.isEmpty
           ? true
-          : (fabric.name.toLowerCase().contains(
-                  filters.searchTerm.toLowerCase(),
-                ) ||
-                (fabric.description ?? '').toLowerCase().contains(
-                  filters.searchTerm.toLowerCase(),
-                ));
+          : fabric.name.toLowerCase().contains(search) ||
+                (fabric.description ?? '').toLowerCase().contains(search) ||
+                (fabric.notes ?? '').toLowerCase().contains(search) ||
+                (fabric.brand ?? '').toLowerCase().contains(search);
 
       return matchesColour && matchesSeason && matchesLength && matchesSearch;
     }).toList();

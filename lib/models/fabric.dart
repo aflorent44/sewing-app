@@ -2,8 +2,7 @@ import 'package:hive/hive.dart';
 import 'package:mon_app_couture/models/enums/colour.dart';
 import 'package:mon_app_couture/models/enums/season.dart';
 import 'package:mon_app_couture/models/material_model.dart';
-import 'package:mon_app_couture/models/fabric_type.dart';
-import 'package:mon_app_couture/models/brand.dart';
+import 'package:mon_app_couture/models/enums/fabric_type.dart';
 
 part 'fabric.g.dart';
 
@@ -22,7 +21,7 @@ class Fabric extends HiveObject {
   final FabricType? type;
 
   @HiveField(4)
-  final Brand? brand;
+  final String? brand;
 
   @HiveField(5)
   final String? weave;
@@ -94,7 +93,7 @@ class Fabric extends HiveObject {
       name: json['name'] as String,
       description: json['description'] as String?,
       type: json['type'] != null ? FabricType.fromJson(json['type']) : null,
-      brand: json['brand'] != null ? Brand.fromJson(json['brand']) : null,
+      brand: json['brand'] as String?,
       weave: json['weave'] as String?,
       materials: json['materials'] != null
           ? (json['materials'] as List<dynamic>).map((m) {
@@ -143,7 +142,7 @@ class Fabric extends HiveObject {
     'name': name,
     if (description != null) 'description': description,
     if (type != null) 'type': type!.toJson(),
-    if (brand != null) 'brand': brand!.toJson(),
+    if (brand != null) 'brand': brand,
     if (weave != null) 'weave': weave,
     if (materials != null)
       'materials': materials!.map((m) => m.toJson()).toList(),
@@ -165,7 +164,7 @@ class Fabric extends HiveObject {
     String? name,
     String? description,
     FabricType? type,
-    Brand? brand,
+    String? brand,
     String? weave,
     List<MaterialModel>? materials,
     List<Season>? seasons,

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class CustomChipField<T extends Enum> extends StatelessWidget {
+class CustomMultiselectChipField<T extends Enum> extends StatelessWidget {
   final String label;
   final List<T> values;
-  final T selected;
-  final ValueChanged<T> onChanged;
+  final List<T> selected;
+  final ValueChanged<List<T>> onChanged;
   final String Function(T)? labelBuilder;
 
-  const CustomChipField({
+  const CustomMultiselectChipField({
     super.key,
     required this.label,
     required this.values,
@@ -31,16 +31,19 @@ class CustomChipField<T extends Enum> extends StatelessWidget {
           spacing: 2,
           runSpacing: 3,
           children: values.map((value) {
-            final isSelected = selected == value;
-            return ChoiceChip(
+            final isSelected = selected.contains(value);
+            return FilterChip(
               label: Text(labelBuilder?.call(value) ?? value.toString()),
-              labelStyle: const TextStyle(fontSize: 12),
               showCheckmark: false,
               selected: isSelected,
               onSelected: (bool selectedNow) {
+                final updated = [...selected];
                 if (selectedNow) {
-                  onChanged(value);
+                  updated.add(value);
+                } else {
+                  updated.remove(value);
                 }
+                onChanged(updated);
               },
             );
           }).toList(),

@@ -91,7 +91,7 @@ Future<void> saveFabric(Fabric fabric, List<String> toCreateMaterials) async {
 Future<void> updateFabric(
   String id,
   Fabric fabric,
-  List<String> toCreateMaterials,
+  List<String> toCreateMaterials
 ) async {
   List<MaterialModel> savedMaterials = [];
 
