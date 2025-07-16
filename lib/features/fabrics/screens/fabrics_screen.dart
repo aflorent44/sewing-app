@@ -64,6 +64,9 @@ class _FabricsScreenState extends State<FabricsScreen> {
       if (filters.searchTerm.isNotEmpty) {
         final results = await fetchFabricsByKeyword(filters.searchTerm);
         controller.allFabrics = results;
+      } else {
+        final all = await fetchFabrics();
+        controller.allFabrics = all;
       }
       filteredFabrics = controller.applyFilters(filters);
       setState(() {
