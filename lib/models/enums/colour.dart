@@ -107,3 +107,15 @@ Color mapColourToColor(Colour colour) {
       return Color.fromARGB(255, 228, 180, 162);
   }
 }
+
+Widget colorCircle(Colour colour, double size) {
+  return Container(
+    width: size,
+    height: size,
+    decoration: BoxDecoration(
+      color: mapColourToColor(colour),
+      shape: BoxShape.circle,
+      border: Border.all(color: Colors.grey.shade300),
+    ),
+  );
+}

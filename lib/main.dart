@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mon_app_couture/app/screens/init_screen.dart';
 import 'package:mon_app_couture/core/theme.dart';
 import 'package:mon_app_couture/models/enums/colour.dart';
+import 'package:mon_app_couture/models/enums/fabric_type.dart';
 import 'package:mon_app_couture/models/enums/season.dart';
 import 'routes.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -20,15 +21,13 @@ void main() async {
   Hive.registerAdapter(MaterialModelAdapter());
   Hive.registerAdapter(ColourAdapter());
   Hive.registerAdapter(SeasonAdapter());
+  Hive.registerAdapter(FabricTypeAdapter());
 
   await Hive.openBox<MaterialModel>('materials');
   await Hive.openBox<Fabric>('fabrics');
 
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => ThemeProvider(),
-      child: MyApp()
-    ),
+    ChangeNotifierProvider(create: (_) => ThemeProvider(), child: MyApp()),
   );
 }
 
@@ -37,12 +36,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-      final themeProvider = Provider.of<ThemeProvider>(context);
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return MaterialApp(
-      title: 'Mon App Couture',
+      title: 'Nippori',
       theme: customLightTheme,
       darkTheme: customDarkTheme,
-      themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light, 
+      themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
       initialRoute: '/',
       routes: appRoutes(),
       onUnknownRoute: (settings) {

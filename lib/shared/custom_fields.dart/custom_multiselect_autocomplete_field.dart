@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-class CustomMultiselectAutocompleteField<T extends Object> extends StatefulWidget {
+class CustomMultiselectAutocompleteField<T extends Object>
+    extends StatefulWidget {
   final String label;
   final List<T> options;
   final List<T> selected;
@@ -61,8 +62,14 @@ class _CustomMultiselectAutocompleteFieldState<T extends Object>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(widget.label),
-        const SizedBox(height: 8),
+        Text(
+          widget.label,
+          style: TextStyle(
+            fontSize: 12,
+            color: Theme.of(context).textTheme.bodyLarge?.color,
+          ),
+          textAlign: TextAlign.start,
+        ),
         RawAutocomplete<T>(
           textEditingController: _controller,
           focusNode: _focusNode,

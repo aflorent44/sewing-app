@@ -1,5 +1,7 @@
 import 'package:hive/hive.dart';
 import 'package:mon_app_couture/models/enums/colour.dart';
+import 'package:mon_app_couture/models/enums/fabric_pattern.dart';
+import 'package:mon_app_couture/models/enums/fabric_status.dart';
 import 'package:mon_app_couture/models/enums/season.dart';
 import 'package:mon_app_couture/models/material_model.dart';
 import 'package:mon_app_couture/models/enums/fabric_type.dart';
@@ -65,6 +67,21 @@ class Fabric extends HiveObject {
   @HiveField(18)
   bool? isSynced;
 
+  @HiveField(19)
+  final bool isARemnant;
+
+  @HiveField(20)
+  final FabricPattern? fabricPattern;
+
+  @HiveField(21)
+  final FabricStatus? fabricStatus;
+
+  @HiveField(22)
+  final DateTime? createdAt;
+
+  @HiveField(23)
+  final DateTime? updatedAt;
+
   Fabric({
     this.id,
     required this.name,
@@ -77,6 +94,9 @@ class Fabric extends HiveObject {
     this.quantity,
     this.colours,
     this.width,
+    this.isARemnant = false,
+    this.fabricPattern,
+    this.fabricStatus,
     this.extensiveness,
     this.price,
     this.images,
@@ -85,6 +105,8 @@ class Fabric extends HiveObject {
     this.isFavorite = false,
     this.userId,
     this.isSynced = false,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory Fabric.fromJson(Map<String, dynamic> json) {
@@ -116,6 +138,7 @@ class Fabric extends HiveObject {
               .toList() ??
           [],
       quantity: (json['quantity'] as num?)?.toDouble(),
+      isARemnant: json['isARemnant'] as bool? ?? false,
       colours:
           (json['colours'] as List<dynamic>?)
               ?.map(
@@ -125,6 +148,12 @@ class Fabric extends HiveObject {
               )
               .toList() ??
           [],
+      fabricPattern: json['fabricPattern'] != null
+          ? FabricPattern.fromJson(json['fabricPattern'])
+          : null,
+      fabricStatus: json['fabricStatus'] != null
+          ? FabricStatus.fromJson(json['fabricStatus'])
+          : null,
       width: json['width'] as int?,
       extensiveness: (json['extensiveness'] as num?)?.toDouble(),
       price: (json['price'] as num?)?.toDouble(),
@@ -133,7 +162,13 @@ class Fabric extends HiveObject {
       notes: json['notes'] as String?,
       isFavorite: json['isFavorite'] as bool? ?? false,
       isSynced: true,
-      userId: json['userId'] as String?,
+      userId: json['user_id'] as String?,
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'] as String)
+          : null,
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'] as String)
+          : null,
     );
   }
 
@@ -148,7 +183,10 @@ class Fabric extends HiveObject {
       'materials': materials!.map((m) => m.toJson()).toList(),
     if (seasons != null) 'seasons': seasons!.map((s) => s.toJson()).toList(),
     if (quantity != null) 'quantity': quantity,
+    'isARemnant': isARemnant,
     if (colours != null) 'colours': colours!.map((c) => c.toJson()).toList(),
+    if (fabricPattern != null) 'fabricPattern': fabricPattern!.toJson(),
+    if (fabricStatus != null) 'fabricStatus': fabricStatus!.toJson(),
     if (width != null) 'width': width,
     if (extensiveness != null) 'extensiveness': extensiveness,
     if (price != null) 'price': price,
@@ -156,7 +194,9 @@ class Fabric extends HiveObject {
     if (link != null) 'link': link,
     if (notes != null) 'notes': notes,
     'isFavorite': isFavorite,
-    if (userId != null) 'userId': userId,
+    if (userId != null) 'user_id': userId,
+    if (createdAt != null) 'createdAt': createdAt,
+    if (updatedAt != null) 'updatedAt': updatedAt
   };
 
   Fabric copyWith({
@@ -169,7 +209,10 @@ class Fabric extends HiveObject {
     List<MaterialModel>? materials,
     List<Season>? seasons,
     double? quantity,
+    bool? isARemnant,
     List<Colour>? colours,
+    FabricPattern? fabricPattern,
+    FabricStatus? fabricStatus,
     int? width,
     double? extensiveness,
     double? price,
@@ -179,6 +222,8 @@ class Fabric extends HiveObject {
     bool? isFavorite,
     String? userId,
     bool? isSynced,
+    DateTime? createdAt,
+    DateTime? updatedAt,
   }) => Fabric(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -189,7 +234,10 @@ class Fabric extends HiveObject {
     materials: materials ?? this.materials,
     seasons: seasons ?? this.seasons,
     quantity: quantity ?? this.quantity,
+    isARemnant: isARemnant ?? this.isARemnant,
     colours: colours ?? this.colours,
+    fabricPattern: fabricPattern ?? this.fabricPattern,
+    fabricStatus: fabricStatus ?? this.fabricStatus,
     width: width ?? this.width,
     extensiveness: extensiveness ?? this.extensiveness,
     price: price ?? this.price,
@@ -199,5 +247,7 @@ class Fabric extends HiveObject {
     isFavorite: isFavorite ?? this.isFavorite,
     userId: userId ?? this.userId,
     isSynced: isSynced ?? this.isSynced,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
   );
 }

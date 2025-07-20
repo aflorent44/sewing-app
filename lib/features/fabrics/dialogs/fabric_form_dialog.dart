@@ -3,12 +3,15 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mon_app_couture/models/enums/colour.dart';
+import 'package:mon_app_couture/models/enums/fabric_pattern.dart';
+import 'package:mon_app_couture/models/enums/fabric_status.dart';
 import 'package:mon_app_couture/models/enums/fabric_type.dart';
 import 'package:mon_app_couture/models/enums/season.dart';
 import 'package:mon_app_couture/models/fabric.dart';
 import 'package:mon_app_couture/models/material_model.dart';
 import 'package:mon_app_couture/services/api/fabric_service.dart';
 import 'package:mon_app_couture/services/api/material_service.dart';
+import 'package:mon_app_couture/shared/custom_fields.dart/custom_autocomplete_field.dart';
 import 'package:mon_app_couture/shared/custom_fields.dart/custom_multiselect_autocomplete_field.dart';
 import 'package:mon_app_couture/shared/custom_fields.dart/custom_chip_field.dart';
 import 'package:mon_app_couture/shared/custom_fields.dart/custom_multiselect_chip_field.dart';
@@ -18,32 +21,46 @@ import 'package:mon_app_couture/shared/custom_fields.dart/custom_text_field.dart
 class FabricFormData {
   String? id;
   String name;
+  bool isFavorite;
   String description;
   double quantity;
+  bool isARemnant;
   int width;
   double extensiveness;
   double price;
+  FabricStatus fabricStatus;
   List<Season> seasons;
   List<Colour> colours;
+  FabricPattern? fabricPattern;
   FabricType type;
   List<MaterialModel> materials;
   String brand;
   String notes;
+  DateTime? createdAt;
+  DateTime? updatedAt;
+  String? userId;
 
   FabricFormData({
     this.id,
     this.name = '',
+    this.isFavorite = false,
     this.description = '',
     this.quantity = 0.0,
+    this.isARemnant = false,
     this.width = 0,
     this.extensiveness = 0.0,
     this.price = 0.0,
+    this.fabricStatus = FabricStatus.bought,
     List<Season>? seasons,
     List<Colour>? colours,
     this.type = FabricType.woven,
+    this.fabricPattern,
     List<MaterialModel>? materials,
     this.brand = '',
     this.notes = '',
+    this.createdAt,
+    this.updatedAt,
+    this.userId
   }) : seasons = seasons ?? [],
        colours = colours ?? [],
        materials = materials ?? [];
@@ -52,17 +69,23 @@ class FabricFormData {
     return Fabric(
       id: id,
       name: name,
+      isFavorite: isFavorite,
       description: description,
       quantity: quantity,
+      isARemnant: isARemnant,
       width: width,
       extensiveness: extensiveness,
       price: price,
+      fabricStatus: fabricStatus,
       seasons: seasons,
       colours: colours,
+      fabricPattern: fabricPattern,
       type: type,
       materials: materials,
       brand: brand,
       notes: notes,
+      createdAt: createdAt,
+      updatedAt: updatedAt
     );
   }
 }
@@ -93,14 +116,18 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
     _formData = FabricFormData(
       id: f?.id,
       name: f?.name ?? '',
+      isFavorite: f?.isFavorite ?? false,
       description: f?.description ?? '',
       quantity: f?.quantity ?? 0.0,
+      isARemnant: f?.isARemnant ?? false,
       width: f?.width ?? 0,
       extensiveness: f?.extensiveness ?? 0.0,
       price: f?.price ?? 0.0,
       type: f?.type ?? FabricType.woven,
       seasons: f?.seasons ?? [],
       colours: f?.colours ?? [],
+      fabricPattern: f?.fabricPattern,
+      fabricStatus: f?.fabricStatus ?? FabricStatus.bought,
       materials: f?.materials ?? [],
       brand: f?.brand ?? '',
       notes: f?.notes ?? '',
@@ -176,7 +203,7 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
     return Dialog(
       child: Container(
         width: 600,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -230,21 +257,44 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
               Row(
                 children: [
                   Expanded(
-                    child: CustomNumericField(
-                      label: 'Quantité (en m)',
-                      initialValue: _formData.quantity.toString(),
-                      onSaved: (v) =>
-                          _formData.quantity = double.tryParse(v ?? '') ?? 0.0,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: CustomNumericField(
+                            label: 'Quantité (en m)',
+                            initialValue: _formData.quantity.toString(),
+                            onSaved: (v) => _formData.quantity =
+                                double.tryParse(v ?? '') ?? 0.0,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: CustomNumericField(
+                            label: 'Laize (en cm)',
+                            initialValue: _formData.width.toString(),
+                            onSaved: (v) =>
+                                _formData.width = int.tryParse(v ?? '') ?? 0,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: CustomNumericField(
-                      label: 'Laize (en cm)',
-                      initialValue: _formData.width.toString(),
-                      onSaved: (v) =>
-                          _formData.width = int.tryParse(v ?? '') ?? 0,
-                    ),
+                  Column(
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          _formData.isARemnant
+                              ? Icons.check_box
+                              : Icons.check_box_outline_blank,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _formData.isARemnant = !_formData.isARemnant;
+                          });
+                        },
+                      ),
+                      const Text('Chute ?', style: TextStyle(fontSize: 8)),
+                    ],
                   ),
                 ],
               ),
@@ -271,6 +321,14 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
                 ],
               ),
 
+              CustomChipField<FabricStatus>(
+                label: 'Etat',
+                values: FabricStatus.values,
+                selected: _formData.fabricStatus,
+                onChanged: (val) => setState(() => _formData.fabricStatus = val),
+                labelBuilder: (s) => s.label,
+              ),
+
               CustomMultiselectChipField<Season>(
                 label: 'Saisons',
                 values: Season.values,
@@ -284,10 +342,17 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
                 values: Colour.values,
                 selected: _formData.colours,
                 onChanged: (val) => setState(() => _formData.colours = val),
-                labelBuilder: (c) => c.label,
+                chipBuilder: (colour) => colorCircle(colour, 16.0),
               ),
 
-              const SizedBox(height: 16),
+              CustomAutocompleteField(
+                label: "Motif",
+                options: FabricPattern.values,
+                selected: _formData.fabricPattern,
+                onChanged: (val) =>
+                    setState(() => _formData.fabricPattern = val),
+                itemLabelBuilder: (p) => p.label,
+              ),
 
               CustomChipField<FabricType>(
                 label: "Type de tissage",
@@ -296,8 +361,6 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
                 onChanged: (val) => setState(() => _formData.type = val),
                 labelBuilder: (t) => t.label,
               ),
-
-              const SizedBox(height: 16),
 
               CustomMultiselectAutocompleteField<MaterialModel>(
                 label: 'Matières',
@@ -339,10 +402,30 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
   Widget displayButtons(String buttonText, bool isEditing) {
     return Column(
       children: [
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
+            Column(
+              children: [
+                IconButton(
+                  icon: Icon(
+                    _formData.isFavorite
+                        ? Icons.favorite
+                        : Icons.favorite_border,
+                    color: _formData.isFavorite ? Colors.red : Colors.grey,
+                  ),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () {
+                    setState(() {
+                      _formData.isFavorite = !_formData.isFavorite;
+                    });
+                  },
+                ),
+
+                const Text('Favori', style: TextStyle(fontSize: 8)),
+              ],
+            ),
             ElevatedButton(onPressed: _onSubmit, child: Text(buttonText)),
             if (isEditing)
               ElevatedButton(
