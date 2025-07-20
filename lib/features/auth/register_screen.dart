@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:mon_app_couture/features/auth/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -14,12 +13,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String _email = '';
   String _password = '';
   String _confirmPassword = '';
+  bool _obscureText = true;
   final TextEditingController _passwordController = TextEditingController();
 
   @override
   void dispose() {
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _toggleVisibility() {
+    setState(() => _obscureText = !_obscureText);
   }
 
   @override
@@ -43,7 +47,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 onSaved: (value) => _email = value!,
               ),
               TextFormField(
-                decoration: const InputDecoration(labelText: 'Mot de passe'),
+                decoration: InputDecoration(
+                  labelText: 'Mot de passe',
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureText ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed: _toggleVisibility,
+                  ),
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Veuillez saisir votre mot de passe';
@@ -52,11 +64,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 },
                 onSaved: (value) => _password = value!,
                 controller: _passwordController,
-                obscureText: true,
+                obscureText: _obscureText,
               ),
               TextFormField(
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Confirmer le mot de passe',
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureText ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed: _toggleVisibility,
+                  ),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -67,13 +85,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   return null;
                 },
                 onSaved: (value) => _confirmPassword = value!,
-                obscureText: true,
+                obscureText: _obscureText,
               ),
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
-                    await registerUser(_email, _password);
+                    final success = await registerUser(_email, _password);
+                    if (success) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Inscription réussie !")),
+                      );
+                      Navigator.pushReplacementNamed(context, '/login');
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Échec de l'inscription")),
+                      );
+                    }
                   }
                 },
                 child: const Text('Inscription'),
@@ -83,21 +111,5 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       ),
     );
-  }
-}
-
-Future<void> registerUser(String email, String password) async {
-  final url = Uri.parse('http://192.168.1.21:3000/register'); // à adapter
-
-  final response = await http.post(
-    url,
-    headers: {'Content-Type': 'application/json'},
-    body: jsonEncode({'email': email, 'password': password}),
-  );
-
-  if (response.statusCode == 201) {
-    print('Utilisateur créé avec succès');
-  } else {
-    print('Erreur : ${response.body}');
   }
 }

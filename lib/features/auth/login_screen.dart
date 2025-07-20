@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:mon_app_couture/features/auth/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -14,6 +13,11 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   String _email = '';
   String _password = '';
+  bool _obscureText = true;
+
+  void _toggleVisibility() {
+    setState(() => _obscureText = !_obscureText);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +40,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 onSaved: (value) => _email = value!,
               ),
               TextFormField(
-                decoration: const InputDecoration(labelText: 'Mot de passe'),
+                decoration: InputDecoration(
+                  labelText: "Mot de passe",
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureText ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed: _toggleVisibility,
+                  ),
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Veuillez saisir votre mot de passe';
@@ -44,11 +56,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   return null;
                 },
                 onSaved: (value) => _password = value!,
-                obscureText: true,
+                obscureText: _obscureText,
               ),
               ElevatedButton(
                 onPressed: () async {
-                  print('Login button pressed');
                   if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
                     bool success = await loginUser(_email, _password);
@@ -75,24 +86,5 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
-  }
-}
-
-Future<bool> loginUser(String email, String password) async {
-
-  try {
-    final url = Uri.parse(
-      'http://192.168.1.21:3000/login',
-    ); // remplace par ton IP
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'password': password}),
-    );
-
-    return response.statusCode == 200;
-  } catch (e) {
-    print('Erreur pendant la requête HTTP : $e');
-    return false;
   }
 }

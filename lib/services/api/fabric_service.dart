@@ -1,17 +1,28 @@
 import 'dart:convert';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:mon_app_couture/models/material_model.dart';
 import 'package:mon_app_couture/services/api/material_service.dart';
 import '../../models/fabric.dart';
 
 final baseUrl = 'http://192.168.1.21:3000/fabric';
+final _secureStorage = FlutterSecureStorage();
+
+Future<Map<String, String>> getAuthHeaders() async {
+  final token = await _secureStorage.read(key: 'jwt_token');
+  print('Token dans headers: $token');
+  return {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'};
+}
 
 Future<List<Fabric>> fetchFabrics() async {
   final fabricsBox = Hive.box<Fabric>('fabrics');
 
   try {
-    final response = await http.get(Uri.parse(baseUrl));
+    final response = await http.get(
+      Uri.parse(baseUrl),
+      headers: await getAuthHeaders(),
+    );
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
@@ -23,10 +34,8 @@ Future<List<Fabric>> fetchFabrics() async {
         return fabric;
       }).toList();
 
-
       // 2. Stockage dans Hive
       for (final fabric in serverFabrics) {
-        
         if (fabric.id == null || fabric.id!.trim().isEmpty) {
           continue;
         }
@@ -36,7 +45,6 @@ Future<List<Fabric>> fetchFabrics() async {
         } catch (e) {
           print("❌ Erreur lors du stockage de ${fabric.name} : $e");
         }
-
       }
       // 3. Tissus locaux non synchronisés
       final unsyncedFabrics = fabricsBox.values
@@ -64,24 +72,21 @@ Future<void> saveFabric(Fabric fabric, List<String> toCreateMaterials) async {
 
   savedMaterials.addAll(fabric.materials ?? []);
 
-  // On clone le JSON sans le champ 'id' pour ne PAS l’envoyer
-  final fabricJson = fabric.toJson()
-    ..remove('id') // Important ! On ne veut pas envoyer l’id local à Mongo
-    ..['materials'] = savedMaterials.map((m) => m.id).toList();
+  final fabricJson = fabric.toJson();
+  fabricJson.remove('_id'); // enlever aussi _id explicitement
+  fabricJson['materials'] = savedMaterials.map((m) => m.id).toList();
+
 
   final response = await http.post(
     Uri.parse(baseUrl),
-    headers: {'Content-Type': 'application/json'},
+    headers: await getAuthHeaders(),
     body: jsonEncode(fabricJson),
   );
 
   if (response.statusCode == 201) {
-
-    // (Optionnel mais utile) : enregistrer le _vrai_ id retourné par Mongo
     final data = jsonDecode(response.body);
     final newId = data['_id'];
     final updatedFabric = fabric.copyWith(id: newId, isSynced: true);
-
     await Hive.box<Fabric>('fabrics').put(newId, updatedFabric);
   } else {
     print('Erreur : ${response.statusCode} - ${response.body}');
@@ -91,7 +96,7 @@ Future<void> saveFabric(Fabric fabric, List<String> toCreateMaterials) async {
 Future<void> updateFabric(
   String id,
   Fabric fabric,
-  List<String> toCreateMaterials
+  List<String> toCreateMaterials,
 ) async {
   List<MaterialModel> savedMaterials = [];
 
@@ -104,7 +109,7 @@ Future<void> updateFabric(
 
   final response = await http.put(
     Uri.parse('$baseUrl/$id'),
-    headers: {'Content-Type': 'application/json'},
+    headers: await getAuthHeaders(),
     body: jsonEncode({
       ...fabric.toJson(),
       'materials': savedMaterials.map((m) => m.id).toList(),
@@ -169,11 +174,9 @@ Future<void> deleteFabric(String id) async {
 
 Future<List<Fabric>> fetchFabricsByKeyword(String searchTerm) async {
   try {
-    final encodedSearchTerm = Uri.encodeQueryComponent(
-      searchTerm,
-    );
+    final encodedSearchTerm = Uri.encodeQueryComponent(searchTerm);
     final url = Uri.parse('$baseUrl/?search=$encodedSearchTerm');
-    final response = await http.get(url);
+    final response = await http.get(url, headers: await getAuthHeaders());
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
@@ -187,4 +190,3 @@ Future<List<Fabric>> fetchFabricsByKeyword(String searchTerm) async {
     rethrow; // Remonter l'erreur pour être catchée dans _onKeywordChanged
   }
 }
-
