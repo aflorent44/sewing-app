@@ -11,7 +11,7 @@ class WelcomeScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("Bienvenue dans Mon App Couture 👗"),
+            const Text("Bienvenue dans Nippori 👗"),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () => Navigator.pushNamed(context, '/login'),

@@ -26,14 +26,14 @@ class FabricsBody extends StatelessWidget {
     return Column(
       children: [
         Expanded(child: _buildBody()) ,
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: ElevatedButton.icon(
-            onPressed: () => openFabricForm(null),
-            icon: Icon(Icons.add),
-            label: Text("Ajouter un tissu"),
-          ),
-        ),
+        // Padding(
+        //   padding: const EdgeInsets.all(6.0),
+        //   child: ElevatedButton.icon(
+        //     onPressed: () => openFabricForm(null),
+        //     icon: Icon(Icons.add),
+        //     label: Text("Ajouter un tissu"),
+        //   ),
+        // ),
       ],
     );
   }
@@ -48,10 +48,10 @@ class FabricsBody extends StatelessWidget {
     } else {
       return GridView.count(
         crossAxisCount: 2, // 👉 3 cartes par ligne
-        mainAxisSpacing: 6,
-        crossAxisSpacing: 6,
-        padding: const EdgeInsets.all(12),
-        childAspectRatio: 1, // 👉 Ajuste selon la forme de ta carte
+        mainAxisSpacing: 2,
+        crossAxisSpacing: 2,
+        padding: const EdgeInsets.all(2),
+        childAspectRatio: 1/1.2, // 👉 Ajuste selon la forme de ta carte
         children: fabrics
             .map(
               (fabric) =>
