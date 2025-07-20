@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mon_app_couture/features/fabrics/controllers/fabrics_controller.dart';
 import 'package:mon_app_couture/features/fabrics/widgets/fabrics_body.dart';
 import 'package:mon_app_couture/features/fabrics/widgets/filters/fabric_filters_bar.dart';
+import 'package:mon_app_couture/features/fabrics/widgets/sorting/fabric_sorting.dart';
+import 'package:mon_app_couture/features/fabrics/widgets/sorting/fabric_sorting_bar.dart';
 import 'package:mon_app_couture/models/fabric.dart';
 import 'package:mon_app_couture/features/fabrics/dialogs/fabric_form_dialog.dart';
 import 'package:mon_app_couture/services/api/fabric_service.dart';
@@ -18,12 +20,18 @@ class _FabricsScreenState extends State<FabricsScreen> {
   final FabricsController controller = FabricsController();
 
   bool _showFilters = false;
-  List<Fabric> filteredFabrics = [];
+  bool _showSorting = false;
   bool _isLoading = false;
   bool _hasError = false;
 
   // Notre unique objet qui contient tous les filtres
   FabricFilters filters = FabricFilters();
+
+  // Notre unique objet qui contient tous les critères de tri
+  FabricSorting sorting = FabricSorting();
+
+  // Liste des tissus à afficher, filtrée et triée
+  List<Fabric> displayedFabrics = [];
 
   @override
   void initState() {
@@ -40,7 +48,34 @@ class _FabricsScreenState extends State<FabricsScreen> {
     try {
       final fabrics = await fetchFabrics();
       controller.allFabrics = fabrics;
-      filteredFabrics = controller.applyFilters(filters);
+      // Appliquer filtres et tri sur la liste chargée
+      displayedFabrics = controller.getFilteredAndSortedFabrics(
+        filters: filters,
+        sorting: sorting,
+      );
+      setState(() {
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _hasError = true;
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _onSortingChanged(FabricSorting newSorting) async {
+    setState(() {
+      sorting = newSorting;
+      _isLoading = true;
+      _hasError = false;
+    });
+
+    try {
+      displayedFabrics = controller.getFilteredAndSortedFabrics(
+        filters: filters,
+        sorting: sorting,
+      );
       setState(() {
         _isLoading = false;
       });
@@ -68,7 +103,10 @@ class _FabricsScreenState extends State<FabricsScreen> {
         final all = await fetchFabrics();
         controller.allFabrics = all;
       }
-      filteredFabrics = controller.applyFilters(filters);
+      displayedFabrics = controller.getFilteredAndSortedFabrics(
+        filters: filters,
+        sorting: sorting,
+      );
       setState(() {
         _isLoading = false;
       });
@@ -81,7 +119,7 @@ class _FabricsScreenState extends State<FabricsScreen> {
   }
 
   void _openFabricForm(Fabric? fabric) async {
-    final result = await showDialog(
+    final result = await showDialog<bool>(
       context: context,
       builder: (context) => FabricFormDialog(fabric: fabric),
     );
@@ -97,7 +135,7 @@ class _FabricsScreenState extends State<FabricsScreen> {
         title: const Text("Liste des tissus"),
         actions: [
           IconButton(
-            icon: Icon(_showFilters ? Icons.filter_alt_off : Icons.filter_alt),
+            icon: Icon(Icons.filter_alt),
             tooltip: _showFilters
                 ? 'Masquer les filtres'
                 : 'Afficher les filtres',
@@ -107,29 +145,54 @@ class _FabricsScreenState extends State<FabricsScreen> {
               });
             },
           ),
+          IconButton(
+            icon: Icon(Icons.sort),
+            tooltip: _showSorting
+                ? 'Masquer les critères de tri'
+                : 'Afficher les critères de tri',
+            onPressed: () {
+              setState(() {
+                _showSorting = !_showSorting;
+              });
+            },
+          ),
         ],
       ),
-
-      body: Column(children: [
-        if (_showFilters)
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: FabricFiltersBar(
-              filters: filters,
-              onFiltersChanged: _onFiltersChanged,
+      body: Column(
+        children: [
+          if (_showFilters)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: FabricFiltersBar(
+                filters: filters,
+                onFiltersChanged: _onFiltersChanged,
+              ),
             ),
-          ),
-          Expanded(child: FabricsBody(
+          if (_showSorting)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: FabricSortingBar(
+                sorting: sorting,
+                onSortingChanged: _onSortingChanged,
+              ),
+            ),
+          Expanded(
+            child: FabricsBody(
               filters: filters,
               onFiltersChanged: _onFiltersChanged,
-              fabrics: filteredFabrics,
+              fabrics: displayedFabrics,
               isLoading: _isLoading,
               hasError: _hasError,
               openFabricForm: _openFabricForm,
             ),
-          )
-      ])
-       
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _openFabricForm(null),
+        tooltip: 'Ajouter un tissu',
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }

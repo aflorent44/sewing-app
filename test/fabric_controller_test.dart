@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mon_app_couture/features/fabrics/widgets/sorting/fabric_sorting.dart';
 import 'package:mon_app_couture/models/fabric.dart';
 import 'package:mon_app_couture/features/fabrics/widgets/filters/fabric_filters.dart';
 import 'package:mon_app_couture/features/fabrics/controllers/fabrics_controller.dart';
@@ -42,26 +43,42 @@ void main() {
 
     test('Sans filtre → tous les tissus sont retournés', () {
       final filters = FabricFilters();
-      final result = controller.applyFilters(filters);
+      final sorting = FabricSorting();
+      final result = controller.getFilteredAndSortedFabrics(
+        filters: filters,
+        sorting: sorting,
+      );
       expect(result.length, 3);
     });
 
     test('Filtre sur mot-clé sans accent → ignore bien les accents', () {
       final filters = FabricFilters(searchTerm: 'ete');
-      final result = controller.applyFilters(filters);
+      final sorting = FabricSorting();
+      final result = controller.getFilteredAndSortedFabrics(
+        filters: filters,
+        sorting: sorting,
+      );
       expect(result, contains(fabric1));
     });
 
     test('Filtre par couleur', () {
       final filters = FabricFilters(selectedColours: {Colour.black});
-      final result = controller.applyFilters(filters);
+      final sorting = FabricSorting();
+      final result = controller.getFilteredAndSortedFabrics(
+        filters: filters,
+        sorting: sorting,
+      );
       expect(result, contains(fabric2));
       expect(result, isNot(contains(fabric1)));
     });
 
     test('Filtre par quantité minimale', () {
       final filters = FabricFilters(minRequiredQuantity: 2.5);
-      final result = controller.applyFilters(filters);
+      final sorting = FabricSorting();
+      final result = controller.getFilteredAndSortedFabrics(
+        filters: filters,
+        sorting: sorting,
+      );
       expect(result, contains(fabric2));
       expect(result, isNot(contains(fabric1)));
       expect(result, isNot(contains(fabric3)));
