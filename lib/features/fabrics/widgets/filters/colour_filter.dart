@@ -18,7 +18,7 @@ class ColourFilter extends StatelessWidget {
       children: Colour.values.map((colour) {
         final isSelected = selectedColours.contains(colour);
         return FilterChip(
-          label: _colorCircle(colour),
+          label: colorCircle(colour, 24),
           selected: isSelected,
           showCheckmark: false,
           onSelected: (bool selected) {
@@ -35,15 +35,4 @@ class ColourFilter extends StatelessWidget {
     );
   }
 
-  Widget _colorCircle(Colour colour) {
-    return Container(
-      width: 24,
-      height: 24,
-      decoration: BoxDecoration(
-        color: mapColourToColor(colour),
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-    );
-  }
 }
