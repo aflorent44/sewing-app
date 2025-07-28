@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mon_app_couture/models/image_model.dart';
-import 'package:mon_app_couture/services/api/image_service.dart';
+import 'package:mon_app_couture/features/patterns/dialogs/pattern_form_dialog.dart';
+import 'package:mon_app_couture/features/patterns/widgets/patterns_body.dart';
+import 'package:mon_app_couture/models/pattern_model.dart';
+import 'package:mon_app_couture/services/api/pattern_service.dart';
 
 class PatternsScreen extends StatefulWidget {
   const PatternsScreen({super.key});
@@ -10,12 +12,43 @@ class PatternsScreen extends StatefulWidget {
 }
 
 class _PatternsScreenState extends State<PatternsScreen> {
-  late Future<List<ImageModel>> images;
-
+  bool _isLoading = false;
+  bool _hasError = false;
+  List<PatternModel> displayedPatterns = [];
+  
   @override
   void initState() {
     super.initState();
-    images = fetchImages();
+    loadPatterns();
+  }
+
+  Future<void> loadPatterns() async {
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
+    try {
+      final patterns = await fetchPatterns();
+      displayedPatterns = patterns;
+      setState(() {
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _hasError = true;
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _openPatternForm(PatternModel? pattern) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => PatternFormDialog(pattern: pattern),
+    );
+    if (result == true) {
+      await loadPatterns();
+    }
   }
 
   @override
@@ -23,8 +56,21 @@ class _PatternsScreenState extends State<PatternsScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text("Patrons")),
       body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [const Padding(padding: EdgeInsets.all(8.0))],
+        children: [
+          Expanded(
+            child: PatternsBody(
+              patterns: displayedPatterns,
+              isLoading: _isLoading,
+              hasError: _hasError,
+              openPatternForm: _openPatternForm,
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _openPatternForm(null),
+        tooltip: 'Ajouter un tissu',
+        child: const Icon(Icons.add),
       ),
     );
   }

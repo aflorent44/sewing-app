@@ -66,7 +66,7 @@ class FabricFormData {
   }) : seasons = seasons ?? [],
        colours = colours ?? [],
        materials = materials ?? [],
-       images = images ?? []; // Changé : toujours une liste
+       images = images ?? []; 
 
   Fabric toFabric() {
     return Fabric(

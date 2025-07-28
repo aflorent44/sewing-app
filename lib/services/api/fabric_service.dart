@@ -6,7 +6,7 @@ import 'package:mon_app_couture/models/image_model.dart';
 import 'package:mon_app_couture/models/material_model.dart';
 import 'package:mon_app_couture/services/api/material_service.dart';
 import 'package:mon_app_couture/services/api/image_service.dart';
-import '../../models/fabric.dart';
+import 'package:mon_app_couture/models/fabric.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 final baseUrl = "${dotenv.env['BASE_URL']!}/fabric";
