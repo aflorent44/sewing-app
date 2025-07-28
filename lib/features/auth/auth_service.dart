@@ -3,11 +3,10 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-final baseUrl = "$dotenv.env['BASE_URL']!";
 final _secureStorage = FlutterSecureStorage();
 
 Future<bool> registerUser(String email, String password) async {
-  final url = Uri.parse('$baseUrl/register');
+  final url = Uri.parse('${dotenv.env['BASE_URL']!}/register');
 
   final response = await http.post(
     url,
@@ -25,7 +24,7 @@ Future<bool> registerUser(String email, String password) async {
 
 Future<bool> loginUser(String email, String password) async {
   final response = await http.post(
-    Uri.parse('$baseUrl/login'),
+    Uri.parse('${dotenv.env['BASE_URL']!}/login'),
     headers: {'Content-Type': 'application/json'},
     body: jsonEncode({'email': email, 'password': password}),
   );
@@ -38,4 +37,3 @@ Future<bool> loginUser(String email, String password) async {
     return false;
   }
 }
-
