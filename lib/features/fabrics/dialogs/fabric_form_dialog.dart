@@ -1,7 +1,4 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:mon_app_couture/models/enums/colour.dart';
 import 'package:mon_app_couture/models/enums/fabric_pattern.dart';
 import 'package:mon_app_couture/models/enums/fabric_status.dart';
@@ -9,14 +6,17 @@ import 'package:mon_app_couture/models/enums/fabric_type.dart';
 import 'package:mon_app_couture/models/enums/season.dart';
 import 'package:mon_app_couture/models/fabric.dart';
 import 'package:mon_app_couture/models/material_model.dart';
+import 'package:mon_app_couture/models/image_model.dart';
 import 'package:mon_app_couture/services/api/fabric_service.dart';
+import 'package:mon_app_couture/services/api/image_service.dart';
 import 'package:mon_app_couture/services/api/material_service.dart';
-import 'package:mon_app_couture/shared/custom_fields.dart/custom_autocomplete_field.dart';
-import 'package:mon_app_couture/shared/custom_fields.dart/custom_multiselect_autocomplete_field.dart';
-import 'package:mon_app_couture/shared/custom_fields.dart/custom_chip_field.dart';
-import 'package:mon_app_couture/shared/custom_fields.dart/custom_multiselect_chip_field.dart';
-import 'package:mon_app_couture/shared/custom_fields.dart/custom_numeric_field.dart';
-import 'package:mon_app_couture/shared/custom_fields.dart/custom_text_field.dart';
+import 'package:mon_app_couture/shared/fields.dart/custom_autocomplete_field.dart';
+import 'package:mon_app_couture/shared/fields.dart/custom_multiselect_autocomplete_field.dart';
+import 'package:mon_app_couture/shared/fields.dart/custom_chip_field.dart';
+import 'package:mon_app_couture/shared/fields.dart/custom_multiselect_chip_field.dart';
+import 'package:mon_app_couture/shared/fields.dart/custom_numeric_field.dart';
+import 'package:mon_app_couture/shared/fields.dart/custom_text_field.dart';
+import 'package:mon_app_couture/shared/widgets/custom_image_picker.dart';
 
 class FabricFormData {
   String? id;
@@ -38,6 +38,7 @@ class FabricFormData {
   String notes;
   DateTime? createdAt;
   DateTime? updatedAt;
+  List<ImageModel> images; // Changé : plus nullable
   String? userId;
 
   FabricFormData({
@@ -60,10 +61,12 @@ class FabricFormData {
     this.notes = '',
     this.createdAt,
     this.updatedAt,
-    this.userId
+    List<ImageModel>? images,
+    this.userId,
   }) : seasons = seasons ?? [],
        colours = colours ?? [],
-       materials = materials ?? [];
+       materials = materials ?? [],
+       images = images ?? []; // Changé : toujours une liste
 
   Fabric toFabric() {
     return Fabric(
@@ -85,7 +88,9 @@ class FabricFormData {
       brand: brand,
       notes: notes,
       createdAt: createdAt,
-      updatedAt: updatedAt
+      updatedAt: updatedAt,
+      images: images,
+      userId: userId,
     );
   }
 }
@@ -104,9 +109,6 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
   late FabricFormData _formData;
   List<MaterialModel> _availableMaterials = [];
   List<String> _toCreateMaterials = [];
-
-  File? _image;
-  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -131,6 +133,7 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
       materials: f?.materials ?? [],
       brand: f?.brand ?? '',
       notes: f?.notes ?? '',
+      images: f?.images ?? [],
     );
 
     _loadMaterials();
@@ -147,33 +150,57 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
     }
   }
 
-  Future<void> _takePhoto() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.camera);
-    if (pickedFile != null) {
-      setState(() {
-        _image = File(pickedFile.path);
-      });
-    }
-  }
-
   Future<void> _onSubmit() async {
     if (!_formKey.currentState!.validate()) return;
 
     _formKey.currentState!.save();
 
     final fabric = _formData.toFabric();
-
-    saveFabricOffline(fabric);
-
     final isEditing = widget.fabric != null;
 
     try {
       if (!isEditing) {
-        await saveFabric(fabric, _toCreateMaterials);
+        // Création : on passe les images à créer
+        final imagesToCreate = _formData.images
+            .where((img) => img.id.isEmpty)
+            .toList();
+        await saveFabric(fabric, _toCreateMaterials, imagesToCreate);
       } else {
-        updateFabricOffline(fabric);
-        await updateFabric(fabric.id!, fabric, _toCreateMaterials);
+        // Modification : on gère les images existantes et nouvelles
+        final imagesToCreate = _formData.images
+            .where((img) => img.id.isEmpty)
+            .toList();
+        final existingImages = _formData.images
+            .where((img) => img.id.isNotEmpty)
+            .toList();
+
+        // Supprimer les images qui ne sont plus dans la liste
+        final originalImages = widget.fabric?.images ?? [];
+        final imagesToDelete = originalImages
+            .where(
+              (original) =>
+                  !existingImages.any((current) => current.id == original.id),
+            )
+            .toList();
+
+        for (final imageToDelete in imagesToDelete) {
+          try {
+            await deleteImageById(imageToDelete.id);
+          } catch (e) {
+            print('Erreur suppression image ${imageToDelete.id}: $e');
+          }
+        }
+
+        await updateFabric(
+          fabric.id!,
+          fabric,
+          _toCreateMaterials,
+          imagesToCreate,
+          existingImages,
+        );
       }
+
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -183,9 +210,10 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
       );
       Navigator.pop(context, true);
     } catch (e) {
-      print('Pas de connexion, enregistrement uniquement local : $e');
+      print('Erreur sauvegarde : $e');
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text(
             'Enregistrement local effectué, synchronisation en attente',
           ),
@@ -325,7 +353,8 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
                 label: 'Etat',
                 values: FabricStatus.values,
                 selected: _formData.fabricStatus,
-                onChanged: (val) => setState(() => _formData.fabricStatus = val),
+                onChanged: (val) =>
+                    setState(() => _formData.fabricStatus = val),
                 labelBuilder: (s) => s.label,
               ),
 
@@ -380,17 +409,16 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
 
               const SizedBox(height: 16),
 
-              if (_image != null)
-                Image.file(_image!, width: 200, height: 200, fit: BoxFit.cover)
-              else
-                const Text('Aucune image sélectionnée'),
-
-              const SizedBox(height: 8),
-
-              ElevatedButton.icon(
-                onPressed: _takePhoto,
-                icon: const Icon(Icons.camera_alt),
-                label: const Text('Prendre une photo'),
+              CustomImagePicker(
+                onImagesSelected: (images) {
+                  setState(() {
+                    _formData.images = images;
+                  });
+                  print("onImagesSelected : $images");
+                },
+                type: 'fabric',
+                refId: widget.fabric?.id,
+                initialImages: _formData.images,
               ),
             ],
           ),
@@ -422,7 +450,6 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
                     });
                   },
                 ),
-
                 const Text('Favori', style: TextStyle(fontSize: 8)),
               ],
             ),
