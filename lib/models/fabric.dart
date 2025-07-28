@@ -1,85 +1,34 @@
-import 'package:hive/hive.dart';
 import 'package:mon_app_couture/models/enums/colour.dart';
 import 'package:mon_app_couture/models/enums/fabric_pattern.dart';
 import 'package:mon_app_couture/models/enums/fabric_status.dart';
 import 'package:mon_app_couture/models/enums/season.dart';
 import 'package:mon_app_couture/models/material_model.dart';
 import 'package:mon_app_couture/models/enums/fabric_type.dart';
+import 'package:mon_app_couture/models/image_model.dart';
 
-part 'fabric.g.dart';
-
-@HiveType(typeId: 1)
-class Fabric extends HiveObject {
-  @HiveField(0)
+class Fabric {
   final String? id;
-
-  @HiveField(1)
   final String name;
-
-  @HiveField(2)
   final String? description;
-
-  @HiveField(3)
   final FabricType? type;
-
-  @HiveField(4)
   final String? brand;
-
-  @HiveField(5)
   final String? weave;
-
-  @HiveField(6)
   final List<MaterialModel>? materials;
-
-  @HiveField(7)
   final List<Season>? seasons;
-
-  @HiveField(8)
   final double? quantity;
-
-  @HiveField(9)
   final List<Colour>? colours;
-
-  @HiveField(10)
   final int? width;
-
-  @HiveField(11)
   final double? extensiveness;
-
-  @HiveField(12)
   final double? price;
-
-  @HiveField(13)
-  final List<String>? images;
-
-  @HiveField(14)
+  final List<ImageModel>? images;
   final String? link;
-
-  @HiveField(15)
   final String? notes;
-
-  @HiveField(16)
   final bool isFavorite;
-
-  @HiveField(17)
   final String? userId;
-
-  @HiveField(18)
-  bool? isSynced;
-
-  @HiveField(19)
   final bool isARemnant;
-
-  @HiveField(20)
   final FabricPattern? fabricPattern;
-
-  @HiveField(21)
   final FabricStatus? fabricStatus;
-
-  @HiveField(22)
   final DateTime? createdAt;
-
-  @HiveField(23)
   final DateTime? updatedAt;
 
   Fabric({
@@ -104,7 +53,6 @@ class Fabric extends HiveObject {
     this.notes,
     this.isFavorite = false,
     this.userId,
-    this.isSynced = false,
     this.createdAt,
     this.updatedAt,
   });
@@ -157,11 +105,14 @@ class Fabric extends HiveObject {
       width: json['width'] as int?,
       extensiveness: (json['extensiveness'] as num?)?.toDouble(),
       price: (json['price'] as num?)?.toDouble(),
-      images: json['images'] != null ? List<String>.from(json['images']) : null,
+      images: json['images'] != null
+          ? (json['images'] as List<dynamic>)
+                .map((i) => ImageModel.fromJson(i))
+                .toList()
+          : null,
       link: json['link'] as String?,
       notes: json['notes'] as String?,
       isFavorite: json['isFavorite'] as bool? ?? false,
-      isSynced: true,
       userId: json['user_id'] as String?,
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)
@@ -190,13 +141,13 @@ class Fabric extends HiveObject {
     if (width != null) 'width': width,
     if (extensiveness != null) 'extensiveness': extensiveness,
     if (price != null) 'price': price,
-    if (images != null) 'images': images,
+    if (images != null) 'images': images!.map((i) => i.toJson()).toList(),
     if (link != null) 'link': link,
     if (notes != null) 'notes': notes,
     'isFavorite': isFavorite,
     if (userId != null) 'user_id': userId,
     if (createdAt != null) 'createdAt': createdAt,
-    if (updatedAt != null) 'updatedAt': updatedAt
+    if (updatedAt != null) 'updatedAt': updatedAt,
   };
 
   Fabric copyWith({
@@ -216,12 +167,11 @@ class Fabric extends HiveObject {
     int? width,
     double? extensiveness,
     double? price,
-    List<String>? images,
+    List<ImageModel>? images,
     String? link,
     String? notes,
     bool? isFavorite,
     String? userId,
-    bool? isSynced,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => Fabric(
@@ -246,7 +196,6 @@ class Fabric extends HiveObject {
     notes: notes ?? this.notes,
     isFavorite: isFavorite ?? this.isFavorite,
     userId: userId ?? this.userId,
-    isSynced: isSynced ?? this.isSynced,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );

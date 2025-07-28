@@ -25,15 +25,7 @@ class FabricsBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Expanded(child: _buildBody()) ,
-        // Padding(
-        //   padding: const EdgeInsets.all(6.0),
-        //   child: ElevatedButton.icon(
-        //     onPressed: () => openFabricForm(null),
-        //     icon: Icon(Icons.add),
-        //     label: Text("Ajouter un tissu"),
-        //   ),
-        // ),
+        Expanded(child: _buildBody()),
       ],
     );
   }
@@ -47,7 +39,7 @@ class FabricsBody extends StatelessWidget {
       return Center(child: Text('Aucun tissu à afficher.'));
     } else {
       return GridView.count(
-        crossAxisCount: 2, // 👉 3 cartes par ligne
+        crossAxisCount: 2, 
         mainAxisSpacing: 2,
         crossAxisSpacing: 2,
         padding: const EdgeInsets.all(2),

@@ -1,13 +1,5 @@
-import 'package:hive/hive.dart';
-
-part 'material_model.g.dart'; 
-
-@HiveType(typeId: 0) // Chaque typeId doit être unique dans ton projet Hive
-class MaterialModel extends HiveObject {
-  @HiveField(0)
+class MaterialModel {
   final String id;
-
-  @HiveField(1)
   final String name;
 
   MaterialModel({required this.id, required this.name});
@@ -26,7 +18,3 @@ class MaterialModel extends HiveObject {
     return 'MaterialModel{id: $id, name: $name}';
   }
 }
-
-
-
-//coton, laine, soie, nylon

@@ -1,31 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:mon_app_couture/app/screens/init_screen.dart';
 import 'package:mon_app_couture/core/theme.dart';
-import 'package:mon_app_couture/models/enums/colour.dart';
-import 'package:mon_app_couture/models/enums/fabric_type.dart';
-import 'package:mon_app_couture/models/enums/season.dart';
 import 'routes.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:mon_app_couture/models/material_model.dart';
-import 'package:mon_app_couture/models/fabric.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.dumpErrorToConsole(details);
   };
-
-  await Hive.initFlutter();
-  Hive.registerAdapter(FabricAdapter());
-  Hive.registerAdapter(MaterialModelAdapter());
-  Hive.registerAdapter(ColourAdapter());
-  Hive.registerAdapter(SeasonAdapter());
-  Hive.registerAdapter(FabricTypeAdapter());
-
-  await Hive.openBox<MaterialModel>('materials');
-  await Hive.openBox<Fabric>('fabrics');
-
+  await dotenv.load(fileName: ".env");
   runApp(
     ChangeNotifierProvider(create: (_) => ThemeProvider(), child: MyApp()),
   );

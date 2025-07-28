@@ -1,11 +1,13 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+final baseUrl = "$dotenv.env['BASE_URL']!";
 final _secureStorage = FlutterSecureStorage();
 
 Future<bool> registerUser(String email, String password) async {
-  final url = Uri.parse('http://192.168.1.21:3000/register');
+  final url = Uri.parse('$baseUrl/register');
 
   final response = await http.post(
     url,
@@ -23,7 +25,7 @@ Future<bool> registerUser(String email, String password) async {
 
 Future<bool> loginUser(String email, String password) async {
   final response = await http.post(
-    Uri.parse('http://192.168.1.21:3000/login'),
+    Uri.parse('$baseUrl/login'),
     headers: {'Content-Type': 'application/json'},
     body: jsonEncode({'email': email, 'password': password}),
   );
