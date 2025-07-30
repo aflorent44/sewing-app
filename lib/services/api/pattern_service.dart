@@ -43,12 +43,9 @@ Future<void> savePattern(
   List<ImageModel> toCreateImages,
 ) async {
   try {
-    print(pattern);
     final patternJson = pattern.toJson()
       ..remove('_id')
       ..remove('images');
-
-    print(patternJson);
 
     final response = await http.post(
       Uri.parse(baseUrl),

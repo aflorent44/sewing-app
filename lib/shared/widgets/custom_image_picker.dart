@@ -29,9 +29,6 @@ class _CustomImagePickerState extends State<CustomImagePicker> {
   void initState() {
     super.initState();
     _selectedImages = List.from(widget.initialImages);
-    print(
-      'CustomImagePicker initState - Images initiales: ${_selectedImages.length}',
-    );
   }
 
   @override

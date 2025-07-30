@@ -69,7 +69,7 @@ class _PatternsScreenState extends State<PatternsScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openPatternForm(null),
-        tooltip: 'Ajouter un tissu',
+        tooltip: 'Ajouter un patron',
         child: const Icon(Icons.add),
       ),
     );
