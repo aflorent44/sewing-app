@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:mon_app_couture/features/projects/dialogs/project_form_dialog.dart';
-import 'package:mon_app_couture/features/projects/widgets/project_body.dart';
-import 'package:mon_app_couture/models/project.dart';
-import 'package:mon_app_couture/services/api/project_service.dart';
+import 'package:mon_app_couture/features/inspirations/dialogs/inspiration_form_dialog.dart';
+import 'package:mon_app_couture/features/inspirations/widgets/inspiration_body.dart';
+import 'package:mon_app_couture/models/inspiration.dart';
+import 'package:mon_app_couture/services/api/inspiration_service.dart';
 
-class ProjectsScreen extends StatefulWidget {
-  const ProjectsScreen({super.key});
+class InspirationsScreen extends StatefulWidget {
+  const InspirationsScreen({super.key});
 
   @override
-  State<ProjectsScreen> createState() => _ProjectsScreenState();
+  State<InspirationsScreen> createState() => _InspirationsScreenState();
 }
 
-class _ProjectsScreenState extends State<ProjectsScreen> {
+class _InspirationsScreenState extends State<InspirationsScreen> {
   bool _isLoading = false;
   bool _hasError = false;
-  List<Project> displayedElements = [];
-  
+  List<Inspiration> displayedElements = [];
+
   @override
   void initState() {
     super.initState();
@@ -28,7 +28,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
       _hasError = false;
     });
     try {
-      final elements = await fetchProjects();
+      final elements = await fetchInspirations();
       displayedElements = elements;
       setState(() {
         _isLoading = false;
@@ -41,10 +41,10 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
     }
   }
 
-  void _openForm(Project? element) async {
+  void _openForm(Inspiration? element) async {
     final result = await showDialog<bool>(
       context: context,
-      builder: (context) => ProjectFormDialog(project: element),
+      builder: (context) => InspirationFormDialog(inspiration: element),
     );
     if (result == true) {
       await loadElements();
@@ -54,12 +54,12 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Projets")),
+      appBar: AppBar(title: const Text("Inspirations")),
       body: Column(
         children: [
           Expanded(
-            child: ProjectsBody(
-              projects: displayedElements,
+            child: InspirationsBody(
+              inspirations: displayedElements,
               isLoading: _isLoading,
               hasError: _hasError,
               openForm: _openForm,
@@ -69,7 +69,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openForm(null),
-        tooltip: 'Ajouter un projet',
+        tooltip: 'Ajouter une inspiration',
         child: const Icon(Icons.add),
       ),
     );

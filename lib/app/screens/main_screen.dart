@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mon_app_couture/features/fabrics/screens/fabrics_screen.dart';
+import 'package:mon_app_couture/features/inspirations/screens/inspirations_screen.dart';
 import 'package:mon_app_couture/features/patterns/screens/patterns_screen.dart';
 import 'package:mon_app_couture/features/profile/profile_screen.dart';
 import 'package:mon_app_couture/features/projects/screens/projects_screen.dart';
@@ -18,6 +19,7 @@ class _MainScreenState extends State<MainScreen> {
     FabricsScreen(),
     PatternsScreen(),
     ProjectsScreen(),
+    InspirationsScreen(),
     ProfileScreen(),
   ];
 
@@ -30,6 +32,7 @@ class _MainScreenState extends State<MainScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Tissus'),
           BottomNavigationBarItem(icon: Icon(Icons.note), label: 'Patrons'),
           BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Projets'),
+          BottomNavigationBarItem(icon: Icon(Icons.cloud), label: 'Inspirations'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
         ],
         currentIndex: _selectedIndex,
