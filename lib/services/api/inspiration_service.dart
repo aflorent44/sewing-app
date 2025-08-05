@@ -107,6 +107,7 @@ Future<void> updateInspiration(
   List<ImageModel> toCreateImages,
   List<ImageModel> existingImages,
 ) async {
+  print('=== DEBUT updateInspiration ===');
   try {
     List<ImageModel> uploadedImages = [];
     for (int i = 0; i < toCreateImages.length; i++) {

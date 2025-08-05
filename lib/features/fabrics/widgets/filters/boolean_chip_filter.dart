@@ -18,7 +18,6 @@ class BooleanChipFilter extends StatelessWidget {
       label: Text(label),
       selected: isActive,
       onSelected: (bool selected) {
-        print(selected);
         onChanged(selected); // selected = true ou false
       },
     );

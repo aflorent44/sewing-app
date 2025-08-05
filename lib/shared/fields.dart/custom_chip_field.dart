@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class CustomChipField<T extends Enum> extends StatelessWidget {
   final String label;
   final List<T> values;
-  final T selected;
+  final T? selected;
   final ValueChanged<T> onChanged;
   final String Function(T)? labelBuilder;
 
@@ -11,7 +11,7 @@ class CustomChipField<T extends Enum> extends StatelessWidget {
     super.key,
     required this.label,
     required this.values,
-    required this.selected,
+    this.selected,
     required this.onChanged,
     this.labelBuilder,
   });

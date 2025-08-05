@@ -52,7 +52,7 @@ class FabricTile extends StatelessWidget {
                           maxLines: 1,
                         ),
                       ),
-                      if (fabric.isFavorite)
+                      if (fabric.isFavorite == true)
                         const Icon(Icons.favorite, color: Colors.red, size: 18),
                     ],
                   ),

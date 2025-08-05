@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class CustomTextField extends StatelessWidget {
   final String label;
-  final String initialValue;
+  final String? initialValue;
   final FormFieldSetter<String>? onSaved;
   final String? Function(String?)? validator;
   final TextInputType keyboardType;
@@ -10,7 +10,7 @@ class CustomTextField extends StatelessWidget {
   const CustomTextField({
     super.key,
     required this.label,
-    required this.initialValue,
+    this.initialValue,
     this.onSaved,
     this.validator,
     this.keyboardType = TextInputType.text,

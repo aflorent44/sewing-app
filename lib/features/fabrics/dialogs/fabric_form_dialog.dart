@@ -16,7 +16,7 @@ import 'package:mon_app_couture/shared/fields.dart/custom_chip_field.dart';
 import 'package:mon_app_couture/shared/fields.dart/custom_multiselect_chip_field.dart';
 import 'package:mon_app_couture/shared/fields.dart/custom_numeric_field.dart';
 import 'package:mon_app_couture/shared/fields.dart/custom_text_field.dart';
-import 'package:mon_app_couture/shared/widgets/custom_image_picker.dart';
+import 'package:mon_app_couture/shared/widgets/forms/custom_image_picker.dart';
 
 class FabricFormData {
   String? id;
@@ -414,7 +414,6 @@ class _FabricFormDialogState extends State<FabricFormDialog> {
                   setState(() {
                     _formData.images = images;
                   });
-                  print("onImagesSelected : $images");
                 },
                 type: 'fabric',
                 refId: widget.fabric?.id,

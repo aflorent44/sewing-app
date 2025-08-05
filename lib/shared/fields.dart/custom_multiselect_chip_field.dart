@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class CustomMultiselectChipField<T extends Enum> extends StatelessWidget {
   final String label;
   final List<T> values;
-  final List<T> selected;
+  final List<T>? selected;
   final ValueChanged<List<T>> onChanged;
   final String Function(T)? labelBuilder;
   final Widget Function(T)? chipBuilder;
@@ -12,7 +12,7 @@ class CustomMultiselectChipField<T extends Enum> extends StatelessWidget {
     super.key,
     required this.label,
     required this.values,
-    required this.selected,
+    this.selected,
     required this.onChanged,
     this.labelBuilder,
     this.chipBuilder,
@@ -40,7 +40,7 @@ class CustomMultiselectChipField<T extends Enum> extends StatelessWidget {
               alignment: WrapAlignment.center, // aligne les chips au centre
               spacing: 2,
               children: values.map((value) {
-                final isSelected = selected.contains(value);
+                final isSelected = selected!.contains(value);
                 return FilterChip(
                   label: chipBuilder != null
                       ? chipBuilder!(value)
@@ -54,7 +54,7 @@ class CustomMultiselectChipField<T extends Enum> extends StatelessWidget {
                   showCheckmark: false,
                   selected: isSelected,
                   onSelected: (bool selectedNow) {
-                    final updated = [...selected];
+                    final updated = [...selected!];
                     if (selectedNow) {
                       updated.add(value);
                     } else {

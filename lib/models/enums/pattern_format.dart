@@ -1,9 +1,9 @@
 enum PatternFormat {
   pdf,
   printed,
-  livre,
+  book,
   magazine,
-  autre;
+  other;
 
   static PatternFormat fromJson(String name) {
     return PatternFormat.values.firstWhere((e) => e.name == name);
@@ -21,9 +21,9 @@ extension PatternFormatExtension on PatternFormat {
         return 'Patron pochette';
       case PatternFormat.magazine:
         return 'Magazine';
-      case PatternFormat.livre:
+      case PatternFormat.book:
         return 'Livre';
-      case PatternFormat.autre:
+      case PatternFormat.other:
         return 'Autre';
     }
   }

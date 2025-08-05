@@ -7,94 +7,95 @@ import 'package:mon_app_couture/models/enums/pattern_type.dart';
 import 'package:mon_app_couture/models/enums/season.dart';
 import 'package:mon_app_couture/models/enums/sewing_level.dart';
 import 'package:mon_app_couture/models/enums/wearer_category.dart';
-import 'package:mon_app_couture/models/image_model.dart';
 import 'package:mon_app_couture/models/pattern_model.dart';
 import 'package:mon_app_couture/services/api/image_service.dart';
 import 'package:mon_app_couture/services/api/pattern_service.dart';
+import 'package:mon_app_couture/services/form_service.dart';
 import 'package:mon_app_couture/shared/fields.dart/custom_chip_field.dart';
 import 'package:mon_app_couture/shared/fields.dart/custom_multiselect_chip_field.dart';
 import 'package:mon_app_couture/shared/fields.dart/custom_text_field.dart';
-import 'package:mon_app_couture/shared/widgets/custom_image_picker.dart';
+import 'package:mon_app_couture/shared/widgets/forms/custom_image_picker.dart';
+import 'package:mon_app_couture/shared/widgets/forms/form_submit_buttons.dart';
 
-class PatternFormData {
-  String? id;
-  String name;
-  String description;
-  String brand;
-  PatternFormat format;
-  PatternStatus status;
-  String sizeRange;
-  List<Season> seasons;
-  List<FabricType> fabricTypes;
-  PatternType projectType;
-  List<WearerCategory> wearerCategories;
-  List<ClothingType> clothingTypes;
-  SewingLevel sewingLevel;
-  List<ImageModel> images;
-  String linkToShop;
-  List<String> necessarySupplies;
-  bool areSeamAllowancesIncluded;
-  bool isFavorite;
-  String userId;
-  DateTime? createdAt;
-  DateTime? updatedAt;
+// class PatternFormData {
+//   String? id;
+//   String name;
+//   String description;
+//   String brand;
+//   PatternFormat format;
+//   PatternStatus status;
+//   String sizeRange;
+//   List<Season> seasons;
+//   List<FabricType> fabricTypes;
+//   PatternType projectType;
+//   List<WearerCategory> wearerCategories;
+//   List<ClothingType> clothingTypes;
+//   SewingLevel sewingLevel;
+//   List<ImageModel> images;
+//   String linkToShop;
+//   List<String> necessarySupplies;
+//   bool areSeamAllowancesIncluded;
+//   bool isFavorite;
+//   String userId;
+//   DateTime? createdAt;
+//   DateTime? updatedAt;
 
-  PatternFormData({
-    this.id,
-    this.name = '',
-    this.description = '',
-    this.brand = '',
-    this.format = PatternFormat.pdf,
-    this.status = PatternStatus.printed,
-    this.sizeRange = '',
-    List<Season>? seasons,
-    List<FabricType>? fabricTypes,
-    this.projectType = PatternType.clothing,
-    List<WearerCategory>? wearerCategories,
-    List<ClothingType>? clothingTypes,
-    this.sewingLevel = SewingLevel.easy,
-    List<ImageModel>? images,
-    this.linkToShop = '',
-    this.necessarySupplies = const [],
-    this.areSeamAllowancesIncluded = false,
-    this.isFavorite = false,
-    this.userId = '',
-    this.createdAt,
-    this.updatedAt,
-  }) : seasons = seasons ?? [],
-       fabricTypes = (fabricTypes?.isNotEmpty ?? false)
-           ? fabricTypes!
-           : [FabricType.woven],
-       wearerCategories = wearerCategories ?? [],
-       clothingTypes = clothingTypes ?? [],
-       images = images ?? [];
+//   PatternFormData({
+//     this.id,
+//     this.name = '',
+//     this.description = '',
+//     this.brand = '',
+//     this.format = PatternFormat.pdf,
+//     this.status = PatternStatus.printed,
+//     this.sizeRange = '',
+//     List<Season>? seasons,
+//     List<FabricType>? fabricTypes,
+//     this.projectType = PatternType.clothing,
+//     List<WearerCategory>? wearerCategories,
+//     List<ClothingType>? clothingTypes,
+//     this.sewingLevel = SewingLevel.easy,
+//     List<ImageModel>? images,
+//     this.linkToShop = '',
+//     this.necessarySupplies = const [],
+//     this.areSeamAllowancesIncluded = false,
+//     this.isFavorite = false,
+//     this.userId = '',
+//     this.createdAt,
+//     this.updatedAt,
+//   }) : seasons = seasons ?? [],
+//        fabricTypes = (fabricTypes?.isNotEmpty ?? false)
+//            ? fabricTypes!
+//            : [FabricType.woven],
+//        wearerCategories = wearerCategories ?? [],
+//        clothingTypes = clothingTypes ?? [],
+//        images = images ?? [];
 
-  PatternModel toPattern() {
-    return PatternModel(
-      id: id,
-      name: name,
-      description: description,
-      brand: brand,
-      format: format,
-      status: status,
-      sizeRange: sizeRange,
-      seasons: seasons,
-      fabricTypes: fabricTypes,
-      projectType: projectType,
-      wearerCategories: wearerCategories,
-      clothingTypes: clothingTypes,
-      sewingLevel: sewingLevel,
-      images: images,
-      linkToShop: linkToShop,
-      necessarySupplies: necessarySupplies,
-      areSeamAllowancesIncluded: areSeamAllowancesIncluded,
-      isFavorite: isFavorite,
-      userId: userId,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-    );
-  }
-}
+//   PatternModel toPattern() {
+//     return PatternModel(
+//       id: id,
+//       name: name,
+//       description: description,
+//       brand: brand,
+//       format: format,
+//       status: status,
+//       sizeRange: sizeRange,
+//       seasons: seasons,
+//       fabricTypes: fabricTypes,
+//       projectType: projectType,
+//       wearerCategories: wearerCategories,
+//       clothingTypes: clothingTypes,
+//       sewingLevel: sewingLevel,
+//       images: images,
+//       linkToShop: linkToShop,
+//       necessarySupplies: necessarySupplies,
+//       areSeamAllowancesIncluded: areSeamAllowancesIncluded,
+//       isFavorite: isFavorite,
+//       userId: userId,
+//       createdAt: createdAt,
+//       updatedAt: updatedAt,
+//     );
+//   }
+// }
 
 class PatternFormDialog extends StatefulWidget {
   final PatternModel? pattern;
@@ -107,104 +108,141 @@ class PatternFormDialog extends StatefulWidget {
 
 class _PatternFormDialogState extends State<PatternFormDialog> {
   final _formKey = GlobalKey<FormState>();
-  late PatternFormData _formData;
+  late PatternModel _formData;
+
+  final formService = FormService<PatternModel>(
+    createFunc: savePattern,
+    updateFunc: updatePattern,
+    deleteImageFunc: deleteImageById,
+  );
 
   @override
   void initState() {
     super.initState();
 
-    final p = widget.pattern;
-    _formData = PatternFormData(
-      id: p?.id,
-      name: p?.name ?? '',
-      description: p?.description ?? '',
-      brand: p?.brand ?? '',
-      format: p?.format ?? PatternFormat.pdf,
-      status: p?.status ?? PatternStatus.printed,
-      sizeRange: p?.sizeRange ?? '',
-      seasons: p?.seasons ?? [],
-      fabricTypes: (p?.fabricTypes?.isNotEmpty ?? false)
-          ? p!.fabricTypes
-          : [FabricType.woven],
-      projectType: p?.projectType ?? PatternType.clothing,
-      wearerCategories: p?.wearerCategories ?? [],
-      clothingTypes: p?.clothingTypes ?? [],
-      sewingLevel: p?.sewingLevel ?? SewingLevel.easy,
-      images: p?.images ?? [],
-      linkToShop: p?.linkToShop ?? '',
-      necessarySupplies: p?.necessarySupplies ?? [],
-      areSeamAllowancesIncluded: p?.areSeamAllowancesIncluded ?? false,
-      isFavorite: p?.isFavorite ?? false,
-      userId: p?.userId ?? '',
-      createdAt: p?.createdAt,
-      updatedAt: p?.updatedAt,
-    );
+    _formData =
+        widget.pattern ??
+        PatternModel(
+          id: null,
+          name: '',
+          description: '',
+          brand: '',
+          format: PatternFormat.pdf,
+          status: PatternStatus.printed,
+          sizeRange: '',
+          seasons: [],
+          fabricTypes: [FabricType.woven],
+          projectType: PatternType.clothing,
+          wearerCategories: [],
+          clothingTypes: [],
+          sewingLevel: SewingLevel.easy,
+          images: [],
+          linkToShop: '',
+          necessarySupplies: [],
+          areSeamAllowancesIncluded: false,
+          isFavorite: false,
+          userId: '',
+          createdAt: null,
+        );
   }
 
   Future<void> _onSubmit() async {
     if (!_formKey.currentState!.validate()) return;
+
     _formKey.currentState!.save();
 
-    final pattern = _formData.toPattern();
-    final isEditing = widget.pattern != null;
-
     try {
-      if (!isEditing) {
-        // Création : on passe les images à créer
-        final imagesToCreate = _formData.images
-            .where((img) => img.id.isEmpty)
-            .toList();
-        await savePattern(pattern, imagesToCreate);
-      } else {
-        // Modification : on gère les images existantes et nouvelles
-        final imagesToCreate = _formData.images
-            .where((img) => img.id.isEmpty)
-            .toList();
-        final existingImages = _formData.images
-            .where((img) => img.id.isNotEmpty)
-            .toList();
-
-        // Supprimer les images qui ne sont plus dans la liste
-        final originalImages = widget.pattern?.images ?? [];
-        final imagesToDelete = originalImages
-            .where(
-              (original) =>
-                  !existingImages.any((current) => current.id == original.id),
-            )
-            .toList();
-        for (final image in imagesToDelete) {
-          try {
-            await deleteImageById(image.id);
-          } catch (e) {
-            print('Erreur suppression image ${image.id}: $e');
-          }
-        }
-        await updatePattern(
-          pattern.id!,
-          pattern,
-          imagesToCreate,
-          existingImages,
-        );
-      }
+      await formService.saveOrUpdate(
+        item: _formData,
+        currentImages: _formData.images ?? [],
+        originalImages: widget.pattern?.images ?? [],
+        itemId: widget.pattern?.id,
+      );
 
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Patron ${isEditing ? 'modifié' : 'ajouté'} avec succès',
+            widget.pattern == null
+                ? 'Inspiration ajoutée avec succès'
+                : 'Inspiration modifiée avec succès',
           ),
         ),
       );
+
       Navigator.pop(context, true);
     } catch (e) {
-      print('Erreur enregistrement pattern: $e');
+      print('Erreur enregistrement inspiration: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erreur lors de l\'enregistrement')),
+      );
     }
   }
+
+  // Future<void> _onSubmit() async {
+  //   if (!_formKey.currentState!.validate()) return;
+  //   _formKey.currentState!.save();
+
+  //   final pattern = _formData.toPattern();
+  //   final isEditing = widget.pattern != null;
+
+  //   try {
+  //     if (!isEditing) {
+  //       // Création : on passe les images à créer
+  //       final imagesToCreate = _formData.images
+  //           .where((img) => img.id.isEmpty)
+  //           .toList();
+  //       await savePattern(pattern, imagesToCreate);
+  //     } else {
+  //       // Modification : on gère les images existantes et nouvelles
+  //       final imagesToCreate = _formData.images
+  //           .where((img) => img.id.isEmpty)
+  //           .toList();
+  //       final existingImages = _formData.images
+  //           .where((img) => img.id.isNotEmpty)
+  //           .toList();
+
+  //       // Supprimer les images qui ne sont plus dans la liste
+  //       final originalImages = widget.pattern?.images ?? [];
+  //       final imagesToDelete = originalImages
+  //           .where(
+  //             (original) =>
+  //                 !existingImages.any((current) => current.id == original.id),
+  //           )
+  //           .toList();
+  //       for (final image in imagesToDelete) {
+  //         try {
+  //           await deleteImageById(image.id);
+  //         } catch (e) {
+  //           print('Erreur suppression image ${image.id}: $e');
+  //         }
+  //       }
+  //       await updatePattern(
+  //         pattern.id!,
+  //         pattern,
+  //         imagesToCreate,
+  //         existingImages,
+  //       );
+  //     }
+
+  //     if (!mounted) return;
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text(
+  //           'Patron ${isEditing ? 'modifié' : 'ajouté'} avec succès',
+  //         ),
+  //       ),
+  //     );
+  //     Navigator.pop(context, true);
+  //   } catch (e) {
+  //     print('Erreur enregistrement pattern: $e');
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.pattern != null;
-    final buttonText = isEditing ? 'Modifier' : 'Ajouter';
     return Dialog(
       child: Container(
         width: 600,
@@ -213,7 +251,12 @@ class _PatternFormDialogState extends State<PatternFormDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             displayForm(isEditing),
-            displayButtons(buttonText, isEditing),
+            FormSubmitButtons(
+              isEditing: isEditing,
+              onSubmit: _onSubmit,
+              itemId: _formData.id ?? '',
+              deleteItem: deletePattern,
+            ),
           ],
         ),
       ),
@@ -243,30 +286,37 @@ class _PatternFormDialogState extends State<PatternFormDialog> {
                 validator: (v) => (v == null || v.isEmpty)
                     ? 'Veuillez saisir le nom du patron'
                     : null,
-                onSaved: (v) => _formData.name = v ?? '',
+                onSaved: (v) => setState(() {
+                  _formData = _formData.copyWith(name: v ?? '');
+                }),
               ),
               CustomTextField(
                 label: 'Description',
                 initialValue: _formData.description,
-                onSaved: (v) => _formData.description = v ?? '',
+                onSaved: (v) => setState(() {
+                  _formData = _formData.copyWith(description: v ?? '');
+                }),
               ),
               CustomTextField(
                 label: 'Marque',
                 initialValue: _formData.brand,
-                onSaved: (v) => _formData.brand = v ?? '',
+                onSaved: (v) => setState(() {
+                  _formData = _formData.copyWith(brand: v ?? '');
+                }),
               ),
               Column(
                 children: [
                   IconButton(
                     icon: Icon(
-                      _formData.areSeamAllowancesIncluded
+                      (_formData.areSeamAllowancesIncluded ?? false)
                           ? Icons.check_box
                           : Icons.check_box_outline_blank,
                     ),
                     onPressed: () {
                       setState(() {
-                        _formData.areSeamAllowancesIncluded =
-                            !_formData.areSeamAllowancesIncluded;
+                        _formData = _formData.copyWith(
+                          areSeamAllowancesIncluded: !(_formData.areSeamAllowancesIncluded ?? false),
+                        );
                       });
                     },
                   ),
@@ -276,11 +326,13 @@ class _PatternFormDialogState extends State<PatternFormDialog> {
                   ),
                 ],
               ),
+
               CustomChipField<PatternFormat>(
                 label: 'Format',
                 values: PatternFormat.values,
                 selected: _formData.format,
-                onChanged: (val) => setState(() => _formData.format = val),
+                onChanged: (val) =>
+                    setState(() => _formData = _formData.copyWith(format: val)),
                 labelBuilder: (f) => f.label,
               ),
               CustomChipField<PatternStatus>(
@@ -303,12 +355,12 @@ class _PatternFormDialogState extends State<PatternFormDialog> {
                     PatternStatus.received,
                     PatternStatus.transfered,
                   ],
-                  PatternFormat.livre => [
+                  PatternFormat.book => [
                     PatternStatus.ordered,
                     PatternStatus.received,
                     PatternStatus.transfered,
                   ],
-                  PatternFormat.autre => [
+                  PatternFormat.other => [
                     PatternStatus.ordered,
                     PatternStatus.bought,
                     PatternStatus.received,
@@ -317,16 +369,20 @@ class _PatternFormDialogState extends State<PatternFormDialog> {
                     PatternStatus.assembled,
                     PatternStatus.transfered,
                   ],
+                  null => throw UnimplementedError(),
                 },
                 selected: _formData.status,
-                onChanged: (val) => setState(() => _formData.status = val),
+                onChanged: (val) =>
+                    setState(() => _formData = _formData.copyWith(status: val)),
                 labelBuilder: (s) => s.label,
               ),
               CustomChipField(
                 label: 'Type de projet',
                 values: PatternType.values,
                 selected: _formData.projectType,
-                onChanged: (val) => setState(() => _formData.projectType = val),
+                onChanged: (val) => setState(
+                  () => _formData = _formData.copyWith(projectType: val),
+                ),
                 labelBuilder: (t) => t.label,
               ),
               if (_formData.projectType == PatternType.clothing ||
@@ -334,15 +390,17 @@ class _PatternFormDialogState extends State<PatternFormDialog> {
                 CustomTextField(
                   label: 'Taille',
                   initialValue: _formData.sizeRange,
-                  onSaved: (v) => _formData.sizeRange = v ?? '',
+                  onSaved: (v) =>
+                      _formData = _formData.copyWith(sizeRange: v ?? ''),
                 ),
               if (_formData.projectType == PatternType.clothing)
                 CustomMultiselectChipField(
                   label: 'Cible',
                   values: WearerCategory.values,
                   selected: _formData.wearerCategories,
-                  onChanged: (val) =>
-                      setState(() => _formData.wearerCategories = val),
+                  onChanged: (val) => setState(
+                    () => _formData = _formData.copyWith(wearerCategories: val),
+                  ),
                   labelBuilder: (c) => c.label,
                 ),
               if (_formData.projectType == PatternType.clothing)
@@ -350,35 +408,36 @@ class _PatternFormDialogState extends State<PatternFormDialog> {
                   label: 'Types de vêtements',
                   values: ClothingType.values,
                   selected: _formData.clothingTypes,
-                  onChanged: (val) =>
-                      setState(() => _formData.clothingTypes = val),
+                  onChanged: (val) => setState(
+                    () => _formData = _formData.copyWith(clothingTypes: val),
+                  ),
                   labelBuilder: (c) => c.label,
                 ),
               CustomChipField(
                 label: 'Niveau de difficulté',
                 values: SewingLevel.values,
                 selected: _formData.sewingLevel,
-                onChanged: (val) => setState(() => _formData.sewingLevel = val),
+                onChanged: (val) => setState(() => _formData = _formData.copyWith(sewingLevel: val)),
                 labelBuilder: (l) => l.label,
               ),
               CustomMultiselectChipField<Season>(
                 label: 'Saisons',
                 values: Season.values,
                 selected: _formData.seasons,
-                onChanged: (val) => setState(() => _formData.seasons = val),
+                onChanged: (val) => setState(() => _formData = _formData.copyWith(seasons: val)),
                 labelBuilder: (s) => s.label,
               ),
 
               CustomImagePicker(
                 onImagesSelected: (images) {
                   setState(() {
-                    _formData.images = images;
+                    _formData  = _formData.copyWith(images: images);
                   });
                   print("onImagesSelected : $images");
                 },
                 type: 'pattern',
                 refId: widget.pattern?.id,
-                initialImages: _formData.images,
+                initialImages: _formData.images ?? [],
               ),
             ],
           ),
@@ -398,15 +457,15 @@ class _PatternFormDialogState extends State<PatternFormDialog> {
               children: [
                 IconButton(
                   icon: Icon(
-                    _formData.isFavorite
+                    (_formData.isFavorite ?? false)
                         ? Icons.favorite
                         : Icons.favorite_border,
-                    color: _formData.isFavorite ? Colors.red : Colors.grey,
+                    color: (_formData.isFavorite ?? false) ? Colors.red : Colors.grey,
                   ),
                   visualDensity: VisualDensity.compact,
                   onPressed: () {
                     setState(() {
-                      _formData.isFavorite = !_formData.isFavorite;
+                      _formData = _formData.copyWith(isFavorite: !(_formData.isFavorite ?? false));
                     });
                   },
                 ),

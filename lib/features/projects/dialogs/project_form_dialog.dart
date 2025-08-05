@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mon_app_couture/models/fabric.dart';
-import 'package:mon_app_couture/models/image_model.dart';
 import 'package:mon_app_couture/models/inspiration.dart';
 import 'package:mon_app_couture/models/pattern_model.dart';
 import 'package:mon_app_couture/models/project.dart';
@@ -9,54 +8,12 @@ import 'package:mon_app_couture/services/api/image_service.dart';
 import 'package:mon_app_couture/services/api/pattern_service.dart';
 import 'package:mon_app_couture/services/api/project_service.dart';
 import 'package:mon_app_couture/services/api/inspiration_service.dart';
+import 'package:mon_app_couture/services/form_service.dart';
 import 'package:mon_app_couture/shared/fields.dart/custom_autocomplete_field.dart';
 import 'package:mon_app_couture/shared/fields.dart/custom_text_field.dart';
-import 'package:mon_app_couture/shared/widgets/custom_image_picker.dart';
+import 'package:mon_app_couture/shared/widgets/forms/custom_image_picker.dart';
 import 'package:collection/collection.dart';
-
-class ProjectFormData {
-  String? id;
-  String name;
-  String notes;
-  List<ImageModel> images;
-  String? inspirationId;
-  String? patternId;
-  String? fabricId;
-  bool isFavorite;
-  String userId;
-  DateTime? createdAt;
-  DateTime? updatedAt;
-
-  ProjectFormData({
-    this.id,
-    this.name = '',
-    this.notes = '',
-    List<ImageModel>? images,
-    this.inspirationId,
-    this.patternId,
-    this.fabricId,
-    this.isFavorite = false,
-    this.userId = '',
-    this.createdAt,
-    this.updatedAt,
-  }) : images = images ?? [];
-
-  Project toProject() {
-    return Project(
-      id: id,
-      name: name,
-      notes: notes,
-      images: images,
-      inspirationId: inspirationId,
-      patternId: patternId,
-      fabricId: fabricId,
-      isFavorite: isFavorite,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-      userId: userId,
-    );
-  }
-}
+import 'package:mon_app_couture/shared/widgets/forms/form_submit_buttons.dart';
 
 class ProjectFormDialog extends StatefulWidget {
   final Project? project;
@@ -69,41 +26,74 @@ class ProjectFormDialog extends StatefulWidget {
 
 class _ProjectFormDialogState extends State<ProjectFormDialog> {
   final _formKey = GlobalKey<FormState>();
-  late ProjectFormData _formData;
+  late Project _formData;
+
+  final formService = FormService<Project>(
+    createFunc: saveProject,
+    updateFunc: updateProject,
+    deleteImageFunc: deleteImageById,
+  );
   List<Inspiration> _allInspirations = [];
   List<PatternModel> _allPatterns = [];
   List<Fabric> _allFabrics = [];
+
+  Key _inspirationKey = UniqueKey();
+  Key _patternKey = UniqueKey();
+  Key _fabricKey = UniqueKey();
 
   @override
   void initState() {
     super.initState();
 
-    final p = widget.project;
-    _formData = ProjectFormData(
-      id: p?.id,
-      name: p?.name ?? '',
-      notes: p?.notes ?? '',
-      images: p?.images ?? [],
-      inspirationId: p?.inspirationId,
-      patternId: p?.patternId,
-      fabricId: p?.fabricId,
-      isFavorite: p?.isFavorite ?? false,
-      userId: p?.userId ?? '',
-      createdAt: p?.createdAt,
-      updatedAt: p?.updatedAt,
-    );
+    _formData =
+        widget.project ??
+        Project(
+          id: null,
+          name: '',
+          notes: '',
+          images: [],
+          inspirationId: null,
+          patternId: null,
+          fabricId: null,
+          isFavorite: false,
+          createdAt: null,
+          updatedAt: null,
+          userId: '',
+        );
 
-    _loadInspirations();
-    _loadPatterns();
-    _loadFabrics();
+            print('DEBUG Project reçu: ${widget.project != null ? 'OUI' : 'NON'}');
+    if (widget.project != null) {
+      print('DEBUG Project ID: ${widget.project!.id}');
+      print('DEBUG Project Name: ${widget.project!.name}');
+      print('DEBUG Project inspirationId: ${widget.project!.inspirationId}');
+      print('DEBUG Project patternId: ${widget.project!.patternId}');
+      print('DEBUG Project fabricId: ${widget.project!.fabricId}');
+    }
+
+    _loadAllData();
+  }
+
+  Future<void> _loadAllData() async {
+    await Future.wait([_loadInspirations(), _loadPatterns(), _loadFabrics()]);
+
+    // Forcer le rebuild des autocomplete après chargement
+    if (mounted) {
+      setState(() {
+        _inspirationKey = UniqueKey();
+        _patternKey = UniqueKey();
+        _fabricKey = UniqueKey();
+      });
+    }
   }
 
   Future<void> _loadInspirations() async {
     try {
       final inspirations = await fetchInspirations();
-      setState(() {
-        _allInspirations = inspirations;
-      });
+      if (mounted) {
+        setState(() {
+          _allInspirations = inspirations;
+        });
+      }
     } catch (e) {
       print("Erreur chargement inspirations : $e");
     }
@@ -112,9 +102,11 @@ class _ProjectFormDialogState extends State<ProjectFormDialog> {
   Future<void> _loadPatterns() async {
     try {
       final patterns = await fetchPatterns();
-      setState(() {
-        _allPatterns = patterns;
-      });
+      if (mounted) {
+        setState(() {
+          _allPatterns = patterns;
+        });
+      }
     } catch (e) {
       print("Erreur chargement patterns : $e");
     }
@@ -123,9 +115,11 @@ class _ProjectFormDialogState extends State<ProjectFormDialog> {
   Future<void> _loadFabrics() async {
     try {
       final fabrics = await fetchFabrics();
-      setState(() {
-        _allFabrics = fabrics;
-      });
+      if (mounted) {
+        setState(() {
+          _allFabrics = fabrics;
+        });
+      }
     } catch (e) {
       print("Erreur chargement fabrics : $e");
     }
@@ -133,68 +127,41 @@ class _ProjectFormDialogState extends State<ProjectFormDialog> {
 
   Future<void> _onSubmit() async {
     if (!_formKey.currentState!.validate()) return;
+
     _formKey.currentState!.save();
 
-    final project = _formData.toProject();
-    final isEditing = widget.project != null;
-
     try {
-      if (!isEditing) {
-        // Création : on passe les images à créer
-        final imagesToCreate = _formData.images
-            .where((img) => img.id.isEmpty)
-            .toList();
-        await saveProject(project, imagesToCreate);
-      } else {
-        // Modification : on gère les images existantes et nouvelles
-        final imagesToCreate = _formData.images
-            .where((img) => img.id.isEmpty)
-            .toList();
-        final existingImages = _formData.images
-            .where((img) => img.id.isNotEmpty)
-            .toList();
-
-        // Supprimer les images qui ne sont plus dans la liste
-        final originalImages = widget.project?.images ?? [];
-        final imagesToDelete = originalImages
-            .where(
-              (original) =>
-                  !existingImages.any((current) => current.id == original.id),
-            )
-            .toList();
-        for (final image in imagesToDelete) {
-          try {
-            await deleteImageById(image.id);
-          } catch (e) {
-            print('Erreur suppression image ${image.id}: $e');
-          }
-        }
-        await updateProject(
-          project.id!,
-          project,
-          imagesToCreate,
-          existingImages,
-        );
-      }
+      await formService.saveOrUpdate(
+        item: _formData,
+        currentImages: _formData.images ?? [],
+        originalImages: widget.project?.images ?? [],
+        itemId: widget.project?.id,
+      );
 
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Projet ${isEditing ? 'modifié' : 'ajouté'} avec succès',
+            widget.project == null
+                ? 'Inspiration ajoutée avec succès'
+                : 'Inspiration modifiée avec succès',
           ),
         ),
       );
+
       Navigator.pop(context, true);
     } catch (e) {
-      print('Erreur enregistrement projet: $e');
+      print('Erreur enregistrement inspiration: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erreur lors de l\'enregistrement')),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.project != null;
-    final buttonText = isEditing ? 'Modifier' : 'Ajouter';
     return Dialog(
       child: Container(
         width: 600,
@@ -203,14 +170,19 @@ class _ProjectFormDialogState extends State<ProjectFormDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             displayForm(isEditing),
-            displayButtons(buttonText, isEditing),
+            FormSubmitButtons(
+              isEditing: isEditing,
+              onSubmit: _onSubmit,
+              itemId: _formData.id ?? '',
+              deleteItem: deleteProject,
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget displayForm(bool isEditing) {
+Widget displayForm(bool isEditing) {
     return Expanded(
       child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -233,131 +205,112 @@ class _ProjectFormDialogState extends State<ProjectFormDialog> {
                 validator: (v) => (v == null || v.isEmpty)
                     ? 'Veuillez saisir le nom du projet'
                     : null,
-                onSaved: (v) => _formData.name = v ?? '',
+                onSaved: (val) => setState(() {
+                  _formData = _formData.copyWith(name: val ?? '');
+                }),
               ),
-              CustomAutocompleteField<Inspiration>(
-                label: 'Inspiration',
-                options: _allInspirations,
-                selected: _allInspirations.firstWhereOrNull(
-                  (i) => i.id == _formData.inspirationId,
-                ),
-                onChanged: (newValue) {
-                  setState(() {
-                    _formData.inspirationId = newValue?.id;
-                  });
+              Builder(
+                builder: (context) {
+                  final selectedInspiration = _allInspirations.firstWhereOrNull(
+                    (i) => i.id == _formData.inspirationId,
+                  );
+                  print(
+                    'DEBUG Inspiration - ID recherché: ${_formData.inspirationId}',
+                  );
+                  print(
+                    'DEBUG Inspiration - Trouvé: ${selectedInspiration?.name ?? 'null'}',
+                  );
+                  print(
+                    'DEBUG Inspiration - Total options: ${_allInspirations.length}',
+                  );
+
+                  return CustomAutocompleteField<Inspiration>(
+                    key: _inspirationKey,
+                    label: 'Inspiration',
+                    options: _allInspirations,
+                    selected: selectedInspiration,
+                    onChanged: (val) {
+                      setState(() {
+                        _formData = _formData.copyWith(inspirationId: val?.id);
+                      });
+                    },
+                    itemLabelBuilder: (i) => i.name,
+                  );
                 },
-                itemLabelBuilder: (i) => i.name,
               ),
-              CustomAutocompleteField<PatternModel>(
-                label: 'Patron',
-                options: _allPatterns,
-                selected: _allPatterns.firstWhereOrNull(
-                  (i) => i.id == _formData.patternId,
-                ),
-                onChanged: (newValue) {
-                  setState(() {
-                    _formData.patternId = newValue?.id;
-                  });
+              Builder(
+                builder: (context) {
+                  final selectedPattern = _allPatterns.firstWhereOrNull(
+                    (i) => i.id == _formData.patternId,
+                  );
+                  print('DEBUG Pattern - ID recherché: ${_formData.patternId}');
+                  print(
+                    'DEBUG Pattern - Trouvé: ${selectedPattern?.name ?? 'null'}',
+                  );
+                  print(
+                    'DEBUG Pattern - Total options: ${_allPatterns.length}',
+                  );
+
+                  return CustomAutocompleteField<PatternModel>(
+                    key: _patternKey,
+                    label: 'Patron',
+                    options: _allPatterns,
+                    selected: selectedPattern,
+                    onChanged: (val) {
+                      setState(() {
+                        _formData = _formData.copyWith(patternId: val?.id);
+                      });
+                    },
+                    itemLabelBuilder: (p) => p.name,
+                  );
                 },
-                itemLabelBuilder: (p) => p.name,
               ),
-              CustomAutocompleteField<Fabric>(
-                label: 'Tissu',
-                options: _allFabrics,
-                selected: _allFabrics.firstWhereOrNull(
-                  (i) => i.id == _formData.fabricId,
-                ),
-                onChanged: (newValue) {
-                  setState(() {
-                    _formData.fabricId = newValue?.id;
-                  });
+              Builder(
+                builder: (context) {
+                  final selectedFabric = _allFabrics.firstWhereOrNull(
+                    (i) => i.id == _formData.fabricId,
+                  );
+                  print('DEBUG Fabric - ID recherché: ${_formData.fabricId}');
+                  print(
+                    'DEBUG Fabric - Trouvé: ${selectedFabric?.name ?? 'null'}',
+                  );
+                  print(
+                    'DEBUG Fabric - Total options: ${_allFabrics.length}',
+                  );
+
+                  return CustomAutocompleteField<Fabric>(
+                    key: _fabricKey,
+                    label: 'Tissu',
+                    options: _allFabrics,
+                    selected: selectedFabric,
+                    onChanged: (val) {
+                      setState(() {
+                        _formData = _formData.copyWith(fabricId: val?.id);
+                      });
+                    },
+                    itemLabelBuilder: (f) => f.name,
+                  );
                 },
-                itemLabelBuilder: (f) => f.name,
               ),
               CustomTextField(
                 label: 'Notes',
                 initialValue: _formData.notes,
-                onSaved: (v) => _formData.notes = v ?? '',
+                onSaved: (v) => _formData = _formData.copyWith(notes: v ?? ''),
               ),
               CustomImagePicker(
                 onImagesSelected: (images) {
                   setState(() {
-                    _formData.images = images;
+                    _formData = _formData.copyWith(images: images);
                   });
                 },
                 type: 'project',
                 refId: widget.project?.id,
-                initialImages: _formData.images,
+                initialImages: _formData.images ?? [],
               ),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget displayButtons(String buttonText, bool isEditing) {
-    return Column(
-      children: [
-        const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Column(
-              children: [
-                IconButton(
-                  icon: Icon(
-                    _formData.isFavorite
-                        ? Icons.favorite
-                        : Icons.favorite_border,
-                    color: _formData.isFavorite ? Colors.red : Colors.grey,
-                  ),
-                  visualDensity: VisualDensity.compact,
-                  onPressed: () {
-                    setState(() {
-                      _formData.isFavorite = !_formData.isFavorite;
-                    });
-                  },
-                ),
-                const Text('Favori', style: TextStyle(fontSize: 8)),
-              ],
-            ),
-            ElevatedButton(onPressed: _onSubmit, child: Text(buttonText)),
-            if (isEditing)
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                onPressed: () async {
-                  final confirm = await showDialog<bool>(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      title: const Text('Confirmation'),
-                      content: const Text(
-                        'Voulez-vous vraiment supprimer ce projet ?',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(ctx, false),
-                          child: const Text('Annuler'),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.pop(ctx, true),
-                          child: const Text('Supprimer'),
-                        ),
-                      ],
-                    ),
-                  );
-
-                  if (confirm == true) {
-                    await deleteProject(widget.project!.id!);
-                    if (!context.mounted) return;
-                    Navigator.pop(context, true);
-                  }
-                },
-                child: const Icon(Icons.delete, color: Colors.white),
-              ),
-          ],
-        ),
-      ],
     );
   }
 }

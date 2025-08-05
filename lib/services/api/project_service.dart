@@ -16,6 +16,8 @@ Future<Map<String, String>> getAuthHeaders() async {
 }
 
 Future<List<Project>> fetchProjects() async {
+  print('=== DEBUT fetchProjects ===');
+
   try {
     final response = await http.get(
       Uri.parse(baseUrl),
@@ -105,6 +107,7 @@ Future<void> updateProject(
   List<ImageModel> toCreateImages,
   List<ImageModel> existingImages,
 ) async {
+  print('=== DEBUT updateProject ===');
   try {
     List<ImageModel> uploadedImages = [];
     for (int i = 0; i < toCreateImages.length; i++) {
